@@ -4,6 +4,8 @@ import ev3dev.actuators.lego.motors.EV3LargeRegulatedMotor;
 import ev3dev.actuators.lego.motors.EV3MediumRegulatedMotor;
 import ev3dev.sensors.Battery;
 import lejos.hardware.port.MotorPort;
+import lejos.hardware.port.SensorPort;
+import lejos.internals.EV3DevPort;
 import lejos.utility.Delay;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -23,6 +25,7 @@ public class test_af_tcp {
         final EV3LargeRegulatedMotor motorLeft = new EV3LargeRegulatedMotor(MotorPort.A);
         final EV3LargeRegulatedMotor motorRight = new EV3LargeRegulatedMotor(MotorPort.B);
         final EV3MediumRegulatedMotor hatch = new EV3MediumRegulatedMotor(MotorPort.C);
+
         final int motorSpeed = 100 * (int) Battery.getInstance().getVoltage();
         motorLeft.setSpeed(motorSpeed);
         motorRight.setSpeed(motorSpeed);
