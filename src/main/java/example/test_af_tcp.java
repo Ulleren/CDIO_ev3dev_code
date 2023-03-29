@@ -15,8 +15,6 @@ import java.net.Socket;
 
 public class test_af_tcp {
 
-
-
     public static void main(final String[] args) throws IOException {
         try {
             System.out.println("Foer");
@@ -24,10 +22,12 @@ public class test_af_tcp {
             GreetClient client = new GreetClient();
             client.startConnection("192.168.1.129", 6666);
             System.out.println("Efter start conn");
+
             final EV3LargeRegulatedMotor motorLeft = new EV3LargeRegulatedMotor(MotorPort.A);
             final EV3LargeRegulatedMotor motorRight = new EV3LargeRegulatedMotor(MotorPort.B);
             final EV3MediumRegulatedMotor hatch = new EV3MediumRegulatedMotor(MotorPort.C);
             final int motorSpeed = 100 * (int) Battery.getInstance().getVoltage();
+
             double vel = 0;
             double motorVelocity;
             double turnLeftMotorSpeed = 0;
