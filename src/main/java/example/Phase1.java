@@ -12,7 +12,7 @@ import lejos.utility.Delay;
 import java.io.IOException;
 
 public class Phase1 {
-    static EV3GyroSensor gyroSensor = new EV3GyroSensor(SensorPort.S3);
+    static EV3GyroSensor gyroSensor = new EV3GyroSensor(SensorPort.S1);
     static EV3MediumRegulatedMotor latch = new EV3MediumRegulatedMotor(MotorPort.C);
 
     public static int currAngle;
@@ -93,19 +93,20 @@ public class Phase1 {
     }
 
     public static void collect(double vel, double latchVelocity, EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight){
-        /*//check latch angle
-        int ang=currentGyroAngle();
-        if(ang!=0){
-            moveLatch();
-        }*/
+        //check latch angle
+        currentGyroAngle();
+        if (currAngle > 10 || currAngle < 0){
+            latch.rotate(currAngle * (-1));
+        }
 
-        //initMotorLatchSpeed(latchVelocity);
+
+        initMotorLatchSpeed(latchVelocity);
         //åbne latch
         moveLatch(0, 90);
-        Delay.msDelay(2000);
+        //Delay.msDelay(500);
         //kørefrem
         movement(vel, 1,1,motorLeft, motorRight);
-        Delay.msDelay(2000);
+        Delay.msDelay(1000);
         motorLeft.stop();
         motorRight.stop();
         moveLatch(1, 90);
@@ -114,6 +115,22 @@ public class Phase1 {
         //lukke latch
 
     }
+
+    public static void drop( double latchVelocity, EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight){
+
+        initMotorLatchSpeed(latchVelocity);
+        moveLatch(0, 90);
+        movement(20, 1,1,motorLeft, motorRight);
+        Delay.msDelay(1000);
+        motorLeft.stop();
+        motorRight.stop();
+        //movement(20, -1,-1,motorLeft, motorRight);
+        moveLatch(1, 90);
+
+        latch.stop();
+
+    }
+
     public static void main(final String[] args) throws IOException {
         initGyro();
         initMotorLatchSpeed(1);
@@ -122,7 +139,7 @@ public class Phase1 {
             System.out.println("Foer");
             //givenGreetingClient_whenServerRespondsWhenStarted_thenCorrect();
             GreetClient client = new GreetClient();
-            client.startConnection("192.168.1.141", 6666);
+            client.startConnection("192.168.1.129", 6666);
             //129 Julius
             //141 Chris
             //145 Ulrik
@@ -204,6 +221,12 @@ public class Phase1 {
 
                             }
                                 collect(vel, latchVelocity, motorLeft, motorRight);
+                                vel = 0;
+                            break;
+
+                        case "drop":
+                            drop(15, motorLeft, motorRight);
+                            vel = 0;
                             break;
 
                         case "stop":
