@@ -1,15 +1,13 @@
 package example;
 
-import ev3dev.actuators.Sound;
-import ev3dev.sensors.Battery;
+import ev3dev.actuators.lego.motors.EV3MediumRegulatedMotor;
 import ev3dev.sensors.ev3.EV3GyroSensor;
 import lejos.hardware.port.MotorPort;
 import lejos.hardware.port.SensorPort;
 import lejos.robotics.SampleProvider;
 import lejos.utility.Delay;
-import ev3dev.actuators.lego.motors.EV3MediumRegulatedMotor;
 
-public class GyroSensor {
+public class Phase1 {
     static EV3GyroSensor gyroSensor = new EV3GyroSensor(SensorPort.S3);
     static EV3MediumRegulatedMotor latch = new EV3MediumRegulatedMotor(MotorPort.C);
 
@@ -17,8 +15,6 @@ public class GyroSensor {
     public static int currLatchPos;
 
 
-    GyroSensor(){
-    }
     public static void initGyro(){
         gyroSensor.reset();
         System.out.println("Reset done from initGyro \n");
@@ -67,7 +63,6 @@ public class GyroSensor {
         return currAngle;
     }
 
-
     public static void main(String[] args) {
         //int cnt=0;
         int dir=0;
@@ -91,5 +86,4 @@ public class GyroSensor {
         }*/
 
     }
-
 }
