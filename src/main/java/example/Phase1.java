@@ -65,10 +65,8 @@ public class Phase1 {
         return currAngle;
     }
 
-    public static void movement(double vel, double turnLeftMotorSpeed, double turnRightMotorSpeed){
+    public static void movement(double vel, double turnLeftMotorSpeed, double turnRightMotorSpeed, EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight ){
         //begin to move
-        final EV3LargeRegulatedMotor motorLeft = new EV3LargeRegulatedMotor(MotorPort.A);
-        final EV3LargeRegulatedMotor motorRight = new EV3LargeRegulatedMotor(MotorPort.B);
 
         double motorVelocity = 5 * vel * (int) Battery.getInstance().getVoltage();
         int leftSum = (int) (20 * turnLeftMotorSpeed * Battery.getInstance().getVoltage() + motorVelocity);
@@ -94,21 +92,25 @@ public class Phase1 {
         // client.sendMessage("Got it");
     }
 
-    public static void collect(double vel, double latchVelocity){
+    public static void collect(double vel, double latchVelocity, EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight){
         /*//check latch angle
         int ang=currentGyroAngle();
         if(ang!=0){
             moveLatch();
         }*/
 
-        initMotorLatchSpeed(latchVelocity);
+        //initMotorLatchSpeed(latchVelocity);
         //åbne latch
         moveLatch(0, 90);
+        Delay.msDelay(2000);
         //kørefrem
-        movement(vel, 0,0);
-        Delay.msDelay(1000);
-        movement(0,0,0);
+        movement(vel, 1,1,motorLeft, motorRight);
+        Delay.msDelay(2000);
+        motorLeft.stop();
+        motorRight.stop();
         moveLatch(1, 90);
+        latch.stop();
+        //initMotorLatchSpeed(latchVelocity);
         //lukke latch
 
     }
@@ -126,7 +128,8 @@ public class Phase1 {
             //145 Ulrik
             //117 Charlotte
             //102 Robot
-
+            final EV3LargeRegulatedMotor motorLeft = new EV3LargeRegulatedMotor(MotorPort.A);
+            final EV3LargeRegulatedMotor motorRight = new EV3LargeRegulatedMotor(MotorPort.B);
             System.out.println("Efter start conn");
 
             double vel = 0; //robots velocity
@@ -188,6 +191,7 @@ public class Phase1 {
                             break;
 
                         case "collect":
+
                             for (int i = 1; i < commandParts.length; i++) {
                                 if (commandParts[i].charAt(0) == 's') {
                                     vel = Double.parseDouble(commandParts[i].substring(1)); //drive speed
@@ -199,6 +203,7 @@ public class Phase1 {
                                 }
 
                             }
+                                collect(vel, latchVelocity, motorLeft, motorRight);
                             break;
 
                         case "stop":
@@ -218,8 +223,7 @@ public class Phase1 {
                                 }
 
                                 if (commandParts[i].charAt(0) == 'g') {
-                                    //hatch.stop();
-                                    //response = client.sendMessage("stop hatch");
+                                    initMotorLatchSpeed(0);
                                 }
                             }
                             break;
@@ -229,10 +233,10 @@ public class Phase1 {
                     }
                 }
 
-                movement(vel, turnLeftMotorSpeed, turnRightMotorSpeed);
+               movement(vel, turnLeftMotorSpeed, turnRightMotorSpeed, motorLeft, motorRight);
                 System.out.println(response);
 
-                collect(vel, latchVelocity);
+
 
             } while (!response.equals("exit"));
 

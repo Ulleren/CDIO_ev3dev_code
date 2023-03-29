@@ -192,6 +192,10 @@ public class test_af_tcp {
                     motorRight.forward();
                 }
 
+
+
+
+
                 System.out.println(response);
                 // client.sendMessage("Got it");
             } while (!response.equals("exit"));
