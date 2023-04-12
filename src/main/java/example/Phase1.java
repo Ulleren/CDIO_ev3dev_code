@@ -153,6 +153,8 @@ public class Phase1 {
             double turnLeftMotorSpeed = 0; //left wheel speed rad/s
             double turnRightMotorSpeed = 0; //right wheel speed rad/s
             double latchVelocity=1;
+            double langle;
+            int mangle;
 
 
             String response;
@@ -223,6 +225,38 @@ public class Phase1 {
                                 collect(vel, latchVelocity, motorLeft, motorRight);
                                 vel = 0;
                             break;
+
+                        case "gate":
+                            for (int i = 1; i < commandParts.length; i++) {
+                                if (commandParts[i].charAt(0) == 'u') { //move latch up
+                                    langle = Double.parseDouble(commandParts[i].substring(1));
+                                    moveLatch(0,langle);
+                                }
+
+                                if (commandParts[i].charAt(0) == 'd') { //move latch down
+                                    langle = Double.parseDouble(commandParts[i].substring(1));
+                                    moveLatch(1,langle);
+                                }
+
+                                if (commandParts[i].charAt(0) == 'a') { //move latch to custom angle
+                                    langle = Double.parseDouble(commandParts[i].substring(1));
+                                    currentGyroAngle();
+                                    mangle = (int) (langle - currAngle);
+                                    latch.rotate(mangle);
+                                }
+
+                                if (commandParts[i].charAt(0) == 's') { //drive speed
+                                    vel = Double.parseDouble(commandParts[i].substring(1));
+
+                                }
+
+                                if (commandParts[i].charAt(0) == 'g') { //gate speed
+                                    latchVelocity = Double.parseDouble(commandParts[i].substring(1));
+                                }
+
+                            }
+                            break;
+
 
                         case "drop":
                             drop(15, motorLeft, motorRight);
