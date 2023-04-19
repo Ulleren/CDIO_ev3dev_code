@@ -5,6 +5,9 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Queue;
 import java.util.Scanner;
 import java.util.stream.Stream;
 
@@ -21,12 +24,14 @@ public class test_af_server{
 
     public static void main(String[] args) throws IOException {
         Server server=new Server();
-        server.start(6666);
-        server.stop();
+            server.start(6666);
+            server.stop();
+
     }
 }
 
-class Server {
+class Server{
+
     private ServerSocket serverSocket;
     private Socket clientSocket;
 
@@ -154,175 +159,190 @@ class Server {
 
 
     public void start(int port) throws IOException {
-        serverSocket = new ServerSocket(port);
-        System.out.println("ready to recive");
-        clientSocket = serverSocket.accept();
-        System.out.println("er her");
+            serverSocket = new ServerSocket(port);
+            String response;
+            int stopCount = 0;
 
-        out = new PrintWriter(clientSocket.getOutputStream(), true);
-        in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            do{
+            System.out.println("ready to recive");
+            clientSocket = serverSocket.accept();
+            System.out.println("er her");
 
-        //GreetClient client = new GreetClient();
+            out = new PrintWriter(clientSocket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
-        String response;
-
-        initGyro();
-        initMotorLatchSpeed(1);
-      // latch.rotate(90);
-        double vel = 0; //robots velocity
-        double turnLeftMotorSpeed = 0; //left wheel speed rad/s
-        double turnRightMotorSpeed = 0; //right wheel speed rad/s
-        double latchVelocity=1;
-        double langle;
-        int mangle;
+            //GreetClient client = new GreetClient();
 
 
-        do {
-            out.println("Got it");
-            out.println("latch angle = " + currAngle);
-            response = "N/A";
-            while (in.ready()){
-                response = in.readLine();
-            }
 
-            String[] commands = response.split(";");
+            initGyro();
+            initMotorLatchSpeed(1);
+            // latch.rotate(90);
+            double vel = 0; //robots velocity
+            double turnLeftMotorSpeed = 0; //left wheel speed rad/s
+            double turnRightMotorSpeed = 0; //right wheel speed rad/s
+            double latchVelocity = 1;
+            double langle;
+            int mangle;
 
-            for (String command : commands) {
-                String[] commandParts = command.replace(" ", "").split("-");
-                switch (commandParts[0]) {
-                    case "turn":
-                        boolean cc = false;
-                        for (int i = 1; i < commandParts.length; i++) {
 
-                            if (commandParts[i].charAt(0) == 'r') {
-                                cc = false;
-                                // response = client.sendMessage("Turning Right");
-                            }
-                            if (commandParts[i].charAt(0) == 'l') {
-                                cc = true;
-                                //response = client.sendMessage("Turning Left");
-                            }
+            do {
+                out.println("Got it");
+                out.println("latch angle = " + currAngle);
+                response = "N/A";
+                while (in.ready()) {
+                    response = in.readLine();
+                }
 
-                            if (commandParts[i].charAt(0) == 's') {
-                                if (!cc) {
-                                    turnLeftMotorSpeed = Double.parseDouble(commandParts[i].substring(1));
-                                    turnRightMotorSpeed = Double.parseDouble(commandParts[i].substring(1)) * -1;
-                                    // response = client.sendMessage("Turn right");
-                                } else {
-                                    turnLeftMotorSpeed = Double.parseDouble(commandParts[i].substring(1)) * -1;
-                                    turnRightMotorSpeed = Double.parseDouble(commandParts[i].substring(1));
-                                    //  response = client.sendMessage("turn left");
+                String[] commands = response.split(";");
+
+                for (String command : commands) {
+                    String[] commandParts = command.replace(" ", "").split("-");
+                    switch (commandParts[0]) {
+                        case "turn":
+                            boolean cc = false;
+                            for (int i = 1; i < commandParts.length; i++) {
+
+                                if (commandParts[i].charAt(0) == 'r') {
+                                    cc = false;
+                                    // response = client.sendMessage("Turning Right");
+                                }
+                                if (commandParts[i].charAt(0) == 'l') {
+                                    cc = true;
+                                    //response = client.sendMessage("Turning Left");
+                                }
+
+                                if (commandParts[i].charAt(0) == 's') {
+                                    if (!cc) {
+                                        turnLeftMotorSpeed = Double.parseDouble(commandParts[i].substring(1));
+                                        turnRightMotorSpeed = Double.parseDouble(commandParts[i].substring(1)) * -1;
+                                        // response = client.sendMessage("Turn right");
+                                    } else {
+                                        turnLeftMotorSpeed = Double.parseDouble(commandParts[i].substring(1)) * -1;
+                                        turnRightMotorSpeed = Double.parseDouble(commandParts[i].substring(1));
+                                        //  response = client.sendMessage("turn left");
+                                    }
                                 }
                             }
-                        }
-                        break;
+                            break;
 
-                    case "drive":
-                        for (int i = 1; i < commandParts.length; i++) {
-                            if (commandParts[i].charAt(0) == 's') {
-                                vel = Double.parseDouble(commandParts[i].substring(1));
-                                //  response = client.sendMessage("drive");
-                            }
+                        case "drive":
+                            for (int i = 1; i < commandParts.length; i++) {
+                                if (commandParts[i].charAt(0) == 's') {
+                                    vel = Double.parseDouble(commandParts[i].substring(1));
+                                    //  response = client.sendMessage("drive");
+                                }
 
-                            if (commandParts[i].charAt(0) == 'b') {
-                                turnRightMotorSpeed = Double.parseDouble(commandParts[i].substring(1)) * -1;
-                                turnLeftMotorSpeed = Double.parseDouble(commandParts[i].substring(1)) * -1;
-                                //  response = client.sendMessage("Back");
-                            }
-
-                        }
-                        break;
-
-                    case "collect":
-
-                        for (int i = 1; i < commandParts.length; i++) {
-                            if (commandParts[i].charAt(0) == 's') {
-                                vel = Double.parseDouble(commandParts[i].substring(1)); //drive speed
+                                if (commandParts[i].charAt(0) == 'b') {
+                                    turnRightMotorSpeed = Double.parseDouble(commandParts[i].substring(1)) * -1;
+                                    turnLeftMotorSpeed = Double.parseDouble(commandParts[i].substring(1)) * -1;
+                                    //  response = client.sendMessage("Back");
+                                }
 
                             }
+                            break;
 
-                            if (commandParts[i].charAt(0) == 'g') {
-                                latchVelocity = Double.parseDouble(commandParts[i].substring(1));
-                            }
+                        case "collect":
 
-                        }
-                        collect(vel, latchVelocity, motorLeft, motorRight);
-                        vel = 0;
-                        break;
+                            for (int i = 1; i < commandParts.length; i++) {
+                                if (commandParts[i].charAt(0) == 's') {
+                                    vel = Double.parseDouble(commandParts[i].substring(1)); //drive speed
 
-                    case "gate":
-                        for (int i = 1; i < commandParts.length; i++) {
-                            if (commandParts[i].charAt(0) == 'u') { //move latch up
-                                langle = Double.parseDouble(commandParts[i].substring(1));
-                                moveLatch(0,langle);
-                            }
+                                }
 
-                            if (commandParts[i].charAt(0) == 'd') { //move latch down
-                                langle = Double.parseDouble(commandParts[i].substring(1));
-                                moveLatch(1,langle);
-                            }
-
-                            if (commandParts[i].charAt(0) == 'a') { //move latch to custom angle
-                                langle = Double.parseDouble(commandParts[i].substring(1));
-                                currentGyroAngle();
-                                mangle = (int) (langle - currAngle);
-                                latch.rotate(mangle);
-                            }
-
-                            if (commandParts[i].charAt(0) == 's') { //drive speed
-                                vel = Double.parseDouble(commandParts[i].substring(1));
+                                if (commandParts[i].charAt(0) == 'g') {
+                                    latchVelocity = Double.parseDouble(commandParts[i].substring(1));
+                                }
 
                             }
+                            collect(vel, latchVelocity, motorLeft, motorRight);
+                            vel = 0;
+                            break;
 
-                            if (commandParts[i].charAt(0) == 'g') { //gate speed
-                                latchVelocity = Double.parseDouble(commandParts[i].substring(1));
+                        case "gate":
+                            for (int i = 1; i < commandParts.length; i++) {
+                                if (commandParts[i].charAt(0) == 'u') { //move latch up
+                                    langle = Double.parseDouble(commandParts[i].substring(1));
+                                    moveLatch(0, langle);
+                                }
+
+                                if (commandParts[i].charAt(0) == 'd') { //move latch down
+                                    langle = Double.parseDouble(commandParts[i].substring(1));
+                                    moveLatch(1, langle);
+                                }
+
+                                if (commandParts[i].charAt(0) == 'a') { //move latch to custom angle
+                                    langle = Double.parseDouble(commandParts[i].substring(1));
+                                    currentGyroAngle();
+                                    mangle = (int) (langle - currAngle);
+                                    latch.rotate(mangle);
+                                }
+
+                                if (commandParts[i].charAt(0) == 's') { //drive speed
+                                    vel = Double.parseDouble(commandParts[i].substring(1));
+
+                                }
+
+                                if (commandParts[i].charAt(0) == 'g') { //gate speed
+                                    latchVelocity = Double.parseDouble(commandParts[i].substring(1));
+                                }
+
                             }
-
-                        }
-                        break;
+                            break;
 
 
-                    case "drop":
-                        drop(15, motorLeft, motorRight);
-                        vel = 0;
-                        break;
+                        case "drop":
+                            drop(15, motorLeft, motorRight);
+                            vel = 0;
+                            break;
 
-                    case "stop":
-                        for (int i = 1; i < commandParts.length; i++) {
-                            if (commandParts[i].charAt(0) == 'd') {
-                                //motorLeft.stop();
-                                //motorRight.stop();
+                        case "stop":
+                            for (int i = 1; i < commandParts.length; i++) {
+                                if (commandParts[i].charAt(0) == 'd') {
+                                    //motorLeft.stop();
+                                    //motorRight.stop();
 
-                                vel = 0;
-                                //response = client.sendMessage("stop drive");
+                                    vel = 0;
+                                    //response = client.sendMessage("stop drive");
+                                }
+
+                                if (commandParts[i].charAt(0) == 't') {
+                                    turnLeftMotorSpeed = 0;
+                                    turnRightMotorSpeed = 0;
+                                    // response = client.sendMessage("stop turn");
+                                }
+
+                                if (commandParts[i].charAt(0) == 'g') {
+                                    initMotorLatchSpeed(0);
+                                }
                             }
+                            break;
+                        default:
+                            break;
 
-                            if (commandParts[i].charAt(0) == 't') {
-                                turnLeftMotorSpeed = 0;
-                                turnRightMotorSpeed = 0;
-                                // response = client.sendMessage("stop turn");
-                            }
-
-                            if (commandParts[i].charAt(0) == 'g') {
-                                initMotorLatchSpeed(0);
-                            }
-                        }
-                        break;
-                    default:
-                        break;
-
+                    }
                 }
-            }
 
-            movement(vel, turnLeftMotorSpeed, turnRightMotorSpeed, motorLeft, motorRight);
-            System.out.println(response);
+                movement(vel, turnLeftMotorSpeed, turnRightMotorSpeed, motorLeft, motorRight);
+                if (!response.equals("N/A")) {
+                    System.out.println(response);
+                    if(stopCount++ >= 1000){
+                        response = "exit";
+                    }
+                }else{
+                    stopCount = 0;
+                }
 
-        } while (!response.equals("exit"));
-    }
+            } while (!response.equals("exit"));
+            } while (!response.equals("exit"));
+        }
+
 
     public void stop() throws IOException {
         clientSocket.close();
         serverSocket.close();
+        in.close();
+        out.close();
     }
 
 }
