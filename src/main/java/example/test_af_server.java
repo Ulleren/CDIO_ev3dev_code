@@ -201,6 +201,10 @@ class Server{
                 out.println("Got it");
                //out.println("latch angle = " + currAngle);
                 response = "N/A";
+
+                if (touch1.isPressed()){
+                    response.equals("exit");
+                }
                 while (in.ready()) {
                     response = in.readLine();
                 }
@@ -357,7 +361,6 @@ class Server{
                     stopCount = 0;*/
                 }
 
-                    response.equals(escape());
             } while (!response.equals("exit"));
                  voice("Bye bitches");
             do {
@@ -383,25 +386,6 @@ class Server{
         TTS.setPitch(60);
         TTS.setMessage(arg);
         TTS.say();
-    }
-
-    public String escape(){
-        final SampleProvider sp = touch1.getTouchMode();
-        int touchValue = 0;
-
-        //Control loop
-        final int iteration_threshold = 20;
-        for(int i = 0; i <= iteration_threshold; i++) {
-
-            float [] sample = new float[sp.sampleSize()];
-            sp.fetchSample(sample, 0);
-            touchValue = (int) sample[0];
-
-
-        }
-        if(touchValue > 15){
-            return "exit";
-        }else return " ";
     }
 
 }
