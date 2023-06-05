@@ -11,16 +11,17 @@ import ev3dev.actuators.lego.motors.EV3MediumRegulatedMotor;
 import ev3dev.sensors.Battery;
 
 import lejos.hardware.port.MotorPort;
-
+import ev3dev.robotics.tts.Espeak;
 import lejos.utility.Delay;
 
 public class test_af_server{
 
+
     public static void main(String[] args) throws IOException {
+
         Server server=new Server();
             server.start(6666);
             server.stop();
-
     }
 }
 
@@ -32,12 +33,15 @@ class Server{
    private static PrintWriter out;
    private static BufferedReader in;
 
+
     //static EV3GyroSensor gyroSensor = new EV3GyroSensor(SensorPort.S1);
     final EV3LargeRegulatedMotor motorLeft = new EV3LargeRegulatedMotor(MotorPort.A);
     final EV3LargeRegulatedMotor motorRight = new EV3LargeRegulatedMotor(MotorPort.B);
     static EV3MediumRegulatedMotor latch = new EV3MediumRegulatedMotor(MotorPort.C);
 
     public static int currAngle;
+    int max_speed = 1;
+    Boolean overwrite = false;
 /*
     public static void initGyro(){
         gyroSensor.reset();
@@ -162,10 +166,11 @@ class Server{
             String response;
             int stopCount = 0;
 
-            do{
+
             System.out.println("ready to recive");
             clientSocket = serverSocket.accept();
             System.out.println("er her");
+            voice();
 
             out = new PrintWriter(clientSocket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
@@ -187,7 +192,7 @@ class Server{
 
             do {
                 out.println("Got it");
-                out.println("latch angle = " + currAngle);
+               //out.println("latch angle = " + currAngle);
                 response = "N/A";
                 while (in.ready()) {
                     response = in.readLine();
@@ -229,6 +234,10 @@ class Server{
                             for (int i = 1; i < commandParts.length; i++) {
                                 if (commandParts[i].charAt(0) == 's') {
                                     vel = Double.parseDouble(commandParts[i].substring(1));
+                                    if (max_speed < vel && overwrite == false){
+                                        vel = max_speed;
+                                        max_speed++;
+                                    }
                                     //  response = client.sendMessage("drive");
                                 }
 
@@ -236,6 +245,10 @@ class Server{
                                     turnRightMotorSpeed = Double.parseDouble(commandParts[i].substring(1)) * -1;
                                     turnLeftMotorSpeed = Double.parseDouble(commandParts[i].substring(1)) * -1;
                                     //  response = client.sendMessage("Back");
+                                }
+
+                                if (commandParts[i].charAt(0) == 'o') {
+                                    overwrite = true;
                                 }
 
                             }
@@ -302,6 +315,8 @@ class Server{
                                     //motorRight.stop();
 
                                     vel = 0;
+                                    max_speed = 1;
+                                    overwrite = false;
                                     //response = client.sendMessage("stop drive");
                                 }
 
@@ -325,14 +340,15 @@ class Server{
                 movement(vel, turnLeftMotorSpeed, turnRightMotorSpeed, motorLeft, motorRight);
                 if (!response.equals("N/A")) {
                     System.out.println(response);
-                    if(stopCount++ >= 1000){
-                        response = "exit";
+                   /* if(stopCount++ >= 50){
+                        System.out.println("waiting to accept new connection");
+                        clientSocket = serverSocket.accept();
+                        System.out.println("accepted new connection");
+                        stopCount = 0;
                     }
                 }else{
-                    stopCount = 0;
+                    stopCount = 0;*/
                 }
-
-            } while (!response.equals("exit"));
             } while (!response.equals("exit"));
         }
 
@@ -342,6 +358,15 @@ class Server{
         serverSocket.close();
         in.close();
         out.close();
+    }
+    public void voice (){
+        Espeak TTS = new Espeak();
+
+        TTS.setVoice("en");
+        TTS.setSpeedReading(105);
+        TTS.setPitch(60);
+        TTS.setMessage("What is my purpose");
+        TTS.say();
     }
 
 }
