@@ -202,9 +202,6 @@ class Server{
                //out.println("latch angle = " + currAngle);
                 response = "N/A";
 
-                if (touch1.isPressed()){
-                    response.equals("exit");
-                }
                 while (in.ready()) {
                     response = in.readLine();
                 }
@@ -359,6 +356,10 @@ class Server{
                     }
                 }else{
                     stopCount = 0;*/
+                }
+
+                if (touch1.isPressed()){
+                    response.equals("exit");
                 }
 
             } while (!response.equals("exit"));
