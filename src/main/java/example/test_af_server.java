@@ -168,9 +168,10 @@ class Server{
 
 
             System.out.println("ready to recive");
+            voice();
             clientSocket = serverSocket.accept();
             System.out.println("er her");
-            voice();
+
 
             out = new PrintWriter(clientSocket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
