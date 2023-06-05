@@ -19,7 +19,7 @@ public class test_af_server{
 
     public static void main(String[] args) throws IOException {
 
-        Server server=new Server();
+            Server server = new Server();
             server.start(6666);
             server.stop();
     }
@@ -168,7 +168,7 @@ class Server{
 
 
             System.out.println("ready to recive");
-            voice();
+            voice("what is my purpose");
             clientSocket = serverSocket.accept();
             System.out.println("er her");
 
@@ -351,6 +351,13 @@ class Server{
                     stopCount = 0;*/
                 }
             } while (!response.equals("exit"));
+                 voice("Bye bitches");
+            do {
+                Server server = new Server();
+                server.start(6666);
+                server.stop();
+            }while (!response.equals("off"));
+
         }
 
 
@@ -360,13 +367,16 @@ class Server{
         in.close();
         out.close();
     }
-    public void voice (){
+    public void voice (String arg){
         Espeak TTS = new Espeak();
+
+        String sentence = new String();
+        sentence = arg;
 
         TTS.setVoice("en");
         TTS.setSpeedReading(105);
         TTS.setPitch(60);
-        TTS.setMessage("What is my purpose");
+        TTS.setMessage(sentence);
         TTS.say();
     }
 
