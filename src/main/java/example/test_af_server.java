@@ -10,8 +10,11 @@ import ev3dev.actuators.lego.motors.EV3LargeRegulatedMotor;
 import ev3dev.actuators.lego.motors.EV3MediumRegulatedMotor;
 import ev3dev.sensors.Battery;
 
+import ev3dev.sensors.ev3.EV3TouchSensor;
 import lejos.hardware.port.MotorPort;
 import ev3dev.robotics.tts.Espeak;
+import lejos.hardware.port.SensorPort;
+import lejos.robotics.SampleProvider;
 import lejos.utility.Delay;
 
 public class test_af_server{
@@ -35,9 +38,12 @@ class Server{
 
 
     //static EV3GyroSensor gyroSensor = new EV3GyroSensor(SensorPort.S1);
+    private static EV3TouchSensor touch1 = new EV3TouchSensor(SensorPort.S1);
     final EV3LargeRegulatedMotor motorLeft = new EV3LargeRegulatedMotor(MotorPort.A);
     final EV3LargeRegulatedMotor motorRight = new EV3LargeRegulatedMotor(MotorPort.B);
     static EV3MediumRegulatedMotor latch = new EV3MediumRegulatedMotor(MotorPort.C);
+
+    final SampleProvider sp = touch1.getTouchMode();
 
     public static int currAngle;
     int max_speed = 1;
@@ -350,6 +356,8 @@ class Server{
                 }else{
                     stopCount = 0;*/
                 }
+
+                    response.equals(escape());
             } while (!response.equals("exit"));
                  voice("Bye bitches");
             do {
@@ -370,14 +378,30 @@ class Server{
     public void voice (String arg){
         Espeak TTS = new Espeak();
 
-        String sentence = new String();
-        sentence = arg;
-
         TTS.setVoice("en");
         TTS.setSpeedReading(105);
         TTS.setPitch(60);
-        TTS.setMessage(sentence);
+        TTS.setMessage(arg);
         TTS.say();
+    }
+
+    public String escape(){
+        final SampleProvider sp = touch1.getTouchMode();
+        int touchValue = 0;
+
+        //Control loop
+        final int iteration_threshold = 20;
+        for(int i = 0; i <= iteration_threshold; i++) {
+
+            float [] sample = new float[sp.sampleSize()];
+            sp.fetchSample(sample, 0);
+            touchValue = (int) sample[0];
+
+
+        }
+        if(touchValue > 15){
+            return "exit";
+        }else return " ";
     }
 
 }
