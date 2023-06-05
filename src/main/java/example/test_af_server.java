@@ -10,7 +10,6 @@ import ev3dev.actuators.lego.motors.EV3LargeRegulatedMotor;
 import ev3dev.actuators.lego.motors.EV3MediumRegulatedMotor;
 import ev3dev.sensors.Battery;
 
-import ev3dev.sensors.ev3.EV3TouchSensor;
 import lejos.hardware.port.MotorPort;
 import ev3dev.robotics.tts.Espeak;
 import lejos.hardware.port.SensorPort;
@@ -33,28 +32,17 @@ class Server{
     private ServerSocket serverSocket;
     private Socket clientSocket;
 
-   private static PrintWriter out;
-   private static BufferedReader in;
+    private static PrintWriter out;
+    private static BufferedReader in;
 
-
-    //static EV3GyroSensor gyroSensor = new EV3GyroSensor(SensorPort.S1);
-    private static EV3TouchSensor touch1 = new EV3TouchSensor(SensorPort.S1);
     final EV3LargeRegulatedMotor motorLeft = new EV3LargeRegulatedMotor(MotorPort.A);
     final EV3LargeRegulatedMotor motorRight = new EV3LargeRegulatedMotor(MotorPort.B);
     static EV3MediumRegulatedMotor latch = new EV3MediumRegulatedMotor(MotorPort.C);
 
-    final SampleProvider sp = touch1.getTouchMode();
-
     public static int currAngle;
     int max_speed = 1;
     Boolean overwrite = false;
-/*
-    public static void initGyro(){
-        gyroSensor.reset();
-        System.out.println("Reset Gyro done from initGyro \n");
 
-    }
-    */
 
     public static void initMotorLatchSpeed(double latchSpeed){
         //convert rad/s to degrees/s
@@ -74,31 +62,6 @@ class Server{
 
     }
 
-    /*
-    public static int currentGyroAngle(){
-        final SampleProvider sp = gyroSensor.getAngleMode();
-
-        float [] sample = new float[sp.sampleSize()]; //save sample in array
-        sp.fetchSample(sample, 0); //get sample
-        currAngle=(int)sample[0];
-
-        System.out.println("Gyro angle is"+(-currAngle)+"\n");
-
-
-        if(currAngle > 89){
-            //latch.stop();
-            System.out.println("Rotated 90 degrees from start position"+"\n");
-
-        }
-        else if(currAngle <= 0){
-            //latch.stop();
-            System.out.println("In start position"+"\n");
-
-        }
-        return currAngle;
-    }
-
-     */
 
     public static void movement(double vel, double turnLeftMotorSpeed, double turnRightMotorSpeed, EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight ){
         //begin to move
@@ -128,12 +91,6 @@ class Server{
     }
 
     public static void collect(double vel, double latchVelocity, EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight){
-        //check latch angle
-       /* currentGyroAngle();
-        if (currAngle > 10 || currAngle < 0){
-            latch.rotate(currAngle * (-1));
-        }
-*/
 
         initMotorLatchSpeed(latchVelocity);
         //åbne latch
@@ -185,8 +142,6 @@ class Server{
             //GreetClient client = new GreetClient();
 
 
-
-            //initGyro();
             initMotorLatchSpeed(1);
             // latch.rotate(90);
             double vel = 0; //robots velocity
@@ -358,17 +313,9 @@ class Server{
                     stopCount = 0;*/
                 }
 
-                if (touch1.isPressed()){
-                    response.equals("exit");
-                }
 
             } while (!response.equals("exit"));
                  voice("Bye bitches");
-            do {
-                Server server = new Server();
-                server.start(6666);
-                server.stop();
-            }while (!response.equals("off"));
 
         }
 
