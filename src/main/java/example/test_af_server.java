@@ -5,19 +5,13 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Queue;
-import java.util.Scanner;
-import java.util.stream.Stream;
 
 import ev3dev.actuators.lego.motors.EV3LargeRegulatedMotor;
 import ev3dev.actuators.lego.motors.EV3MediumRegulatedMotor;
 import ev3dev.sensors.Battery;
-import ev3dev.sensors.ev3.EV3GyroSensor;
+
 import lejos.hardware.port.MotorPort;
-import lejos.hardware.port.SensorPort;
-import lejos.robotics.SampleProvider;
+
 import lejos.utility.Delay;
 
 public class test_af_server{
@@ -38,18 +32,20 @@ class Server{
    private static PrintWriter out;
    private static BufferedReader in;
 
-    static EV3GyroSensor gyroSensor = new EV3GyroSensor(SensorPort.S1);
+    //static EV3GyroSensor gyroSensor = new EV3GyroSensor(SensorPort.S1);
     final EV3LargeRegulatedMotor motorLeft = new EV3LargeRegulatedMotor(MotorPort.A);
     final EV3LargeRegulatedMotor motorRight = new EV3LargeRegulatedMotor(MotorPort.B);
     static EV3MediumRegulatedMotor latch = new EV3MediumRegulatedMotor(MotorPort.C);
 
     public static int currAngle;
-
+/*
     public static void initGyro(){
         gyroSensor.reset();
         System.out.println("Reset Gyro done from initGyro \n");
 
     }
+    */
+
     public static void initMotorLatchSpeed(double latchSpeed){
         //convert rad/s to degrees/s
         latchSpeed= (latchSpeed*57.2957);
@@ -68,6 +64,7 @@ class Server{
 
     }
 
+    /*
     public static int currentGyroAngle(){
         final SampleProvider sp = gyroSensor.getAngleMode();
 
@@ -90,6 +87,8 @@ class Server{
         }
         return currAngle;
     }
+
+     */
 
     public static void movement(double vel, double turnLeftMotorSpeed, double turnRightMotorSpeed, EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight ){
         //begin to move
@@ -175,7 +174,7 @@ class Server{
 
 
 
-            initGyro();
+            //initGyro();
             initMotorLatchSpeed(1);
             // latch.rotate(90);
             double vel = 0; //robots velocity
@@ -273,7 +272,7 @@ class Server{
 
                                 if (commandParts[i].charAt(0) == 'a') { //move latch to custom angle
                                     langle = Double.parseDouble(commandParts[i].substring(1));
-                                    currentGyroAngle();
+                                    //currentGyroAngle();
                                     mangle = (int) (langle - currAngle);
                                     latch.rotate(mangle);
                                 }

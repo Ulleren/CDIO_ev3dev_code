@@ -39,15 +39,15 @@ public class MyFirstRobot {
         System.out.println("Go Forward with the motors");
         //motorLeft.forward();
         //motorRight.forward();
-        hatch.backward();
+        /*hatch.backward();
 
         Delay.msDelay(500);
-
-        hatch.stop();
+*/
+        //hatch.stop();
         motorLeft.forward();
         motorRight.forward();
 
-        Delay.msDelay(1800);
+        Delay.msDelay(1000);
         System.out.println("Stop motors");
         motorLeft.stop();
         motorRight.stop();
@@ -58,7 +58,7 @@ public class MyFirstRobot {
         motorRight.backward();
         //hatch.backward();
 
-        Delay.msDelay(200);
+        //Delay.msDelay(200);
 
         System.out.println("Stop motors");
         motorLeft.stop();
