@@ -2,7 +2,6 @@ package example;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.security.PublicKey;
 
 import ev3dev.actuators.lego.motors.EV3LargeRegulatedMotor;
 import ev3dev.actuators.lego.motors.EV3MediumRegulatedMotor;
@@ -16,44 +15,56 @@ import static example.RunServer.*;
 
 public class RunServer{
 
-    public static boolean sync;
+    public static boolean sync; //Flag for timer to activate
 
-    public static ServerStarter serverStarter;
-    public static Timer timer;
+    public static ServerStarter serverStarter;//Server thread
+    public static Timer timer;//Timer thread
 
+    //Defined motors
     public static EV3LargeRegulatedMotor motorLeft;
     public static EV3LargeRegulatedMotor motorRight;
     public static EV3MediumRegulatedMotor latch;
+
+    //Defined server socket and server class
     public static ServerSocket serverSocket;
     public static Server server;
+
+    //Defined device battery
     public static Battery battery = Battery.getInstance();
 
     public static void main(String[] args) {
+
+        //Instantiate motors
         motorLeft = new EV3LargeRegulatedMotor(MotorPort.A);
         motorRight = new EV3LargeRegulatedMotor(MotorPort.B);
         latch = new EV3MediumRegulatedMotor(MotorPort.C);
+
+        //Instantiate server
         server = new Server();
         try {
-            serverSocket = new ServerSocket(6666);
+            serverSocket = new ServerSocket(6666);//Create socket
         } catch (IOException e) {
             e.printStackTrace();
         }
-        serverStarter = new ServerStarter();
-        timer = new Timer();
+        //Create threads
+        serverStarter = new ServerStarter();//server thread
+        timer = new Timer();//timer thread
+
+        //Start threads
         serverStarter.start();
-        sync = false;
+        sync = false;//Set thread flag
         timer.start();
     }
 }
-
+//Server thread class
 class ServerStarter extends Thread {
 
     public void run() {
         while (true) {
-            RunServer.sync = true;
+            RunServer.sync = true;//Set thread flag true
             try {
-                server.start();
-                server.stop();
+                server.start();//start a server
+                server.stop();//stop the server(unused)
             }catch(Exception e){
                 e.printStackTrace();
             }
@@ -61,25 +72,28 @@ class ServerStarter extends Thread {
     }
 }
 
+//Server class
 class Server{
 
-    public Socket clientSocket;
+    public Socket clientSocket;//Create client socket
+    public static PrintWriter out;//Define server output buffer
+    public static BufferedReader in;//Define server input buffer
 
-    public static PrintWriter out;
-    public static BufferedReader in;
+    public static int currAngle;//Define variable for current angle of gate
 
-    public static int currAngle;
-    int max_speed = 1;
-    Boolean overwrite = false;
+    int max_speed = 1;//Define max speed for robot acceleration
 
+    Boolean overwrite = false;//flag to overwrite acceleration
 
+    //Set speed of latch
     public static void initMotorLatchSpeed(double latchSpeed){
         //convert rad/s to degrees/s
         latchSpeed= (latchSpeed*57.2957);
-        System.out.println("Defining motor speed to "+latchSpeed+" degrees/s\n");
+       // System.out.println("Defining motor speed to "+latchSpeed+" degrees/s\n");
         latch.setSpeed((int) latchSpeed);
     }
 
+    //Method to move latch
     public static void moveLatch(int dir, double angToTurn){
         double relation=5.432; //relation between degrees to turn from angle in degrees and motor position
         int angg= (int) (angToTurn*relation);
@@ -173,22 +187,26 @@ class Server{
             double vel = 0; //robots velocity
             double turnLeftMotorSpeed = 0; //left wheel speed rad/s
             double turnRightMotorSpeed = 0; //right wheel speed rad/s
-            double latchVelocity = 1;
-            double langle;
-            int mangle;
+            double latchVelocity = 1; //Latch velocity read from client
+            double langle; //Latch angle
+            int mangle; //Custom Latch angle(Maybe useless)
 
 
+        //Robot runtime loop
             do {
 
-                out.println("Got it");
-               //out.println("latch angle = " + currAngle);
-                response = "N/A";
+                out.println("Got it");//ACK from server to client
+                response = "N/A";//Initiate response
+
+                //Read client command
                 if (in.ready()) {
                     response = in.readLine();
                 }
 
+                //Semicolon spilts commands
                 String[] commands = response.split(";");
 
+                //Main commands
                 for (String command : commands) {
                     String[] commandParts = command.replace(" ", "").split("-");
                     switch (commandParts[0]) {
@@ -274,7 +292,6 @@ class Server{
 
                                 if (commandParts[i].charAt(0) == 'a') { //move latch to custom angle
                                     langle = Double.parseDouble(commandParts[i].substring(1));
-                                    //currentGyroAngle();
                                     mangle = (int) (langle - currAngle);
                                     latch.rotate(mangle);
                                 }
@@ -299,6 +316,7 @@ class Server{
 
                         case "stop":
                             for (int i = 1; i < commandParts.length; i++) {
+                                // "stop -d" stop driving
                                 if (commandParts[i].charAt(0) == 'd') {
                                     //motorLeft.stop();
                                     //motorRight.stop();
@@ -308,13 +326,13 @@ class Server{
                                     overwrite = false;
                                     //response = client.sendMessage("stop drive");
                                 }
-
+                                // "stop -t" stop turning
                                 if (commandParts[i].charAt(0) == 't') {
                                     turnLeftMotorSpeed = 0;
                                     turnRightMotorSpeed = 0;
                                     // response = client.sendMessage("stop turn");
                                 }
-
+                                // "stop -g" stop gate
                                 if (commandParts[i].charAt(0) == 'g') {
                                     initMotorLatchSpeed(0);
                                 }
@@ -325,26 +343,26 @@ class Server{
 
                     }
                 }
-
+                //Insert movement values given from client into robot movement
                 movement(vel, turnLeftMotorSpeed, turnRightMotorSpeed, motorLeft, motorRight);
+
+                //Test if client still respond
                 if (!response.equals("N/A")) {
                     System.out.println(response);
                     RunServer.sync = true;
                 }
 
 
-
-
             } while (!response.equals("exit"));
-                 voice("Bye bitches");
-                 Timer.counter = Timer.MAX_COUNT;
+                 voice("Bye bitches");//exit response
+                 Timer.counter = Timer.MAX_COUNT;//Timer thread closes server thread and opens new.
 
                  while (true){
-
+                    //Just giving thread time to close
                  }
         }
 
-
+    //Close down server method
     public void stop() throws IOException {
         if(in != null)
         in.close();
@@ -354,11 +372,11 @@ class Server{
         clientSocket.close();
         if(serverSocket != null)
         serverSocket.close();
-
     }
+
+    //TTS method
     public void voice (String arg){
         Espeak TTS = new Espeak();
-
         TTS.setVoice("en");
         TTS.setSpeedReading(105);
         TTS.setPitch(60);
@@ -367,45 +385,51 @@ class Server{
     }
 
 }
+
+//Timer thread
 class Timer extends Thread{
 
-    public static int counter;
-    public static final int MAX_COUNT = 60;//sek
+    public static int counter;//Timeout counter
+    public static final int MAX_COUNT = 60;//Amount of seconds before timeout
 
     public void run(){
-        counter = 0;
+        counter = 0;//Start count at zero
+
         do {
-            if (RunServer.sync) {
-                counter = 0;
-                RunServer.sync = false;
+            if (RunServer.sync) {//If thread flag is true client is still running
+                counter = 0;//Reset count
+                RunServer.sync = false;//Reset flag
             }
 
             try {
-                Thread.sleep(1000);
+                Thread.sleep(1000);//One sec delay to match count with seconds
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
 
-            counter++;
+            counter++;//Increase timer count
 
-            if(counter > MAX_COUNT){
+            if(counter > MAX_COUNT){//If timer reaches max count
+
+                //Stop robot motors
                 motorLeft.stop();
                 motorRight.stop();
                 latch.stop();
+
                 try {
-                    server.stop();
+                    server.stop();//Stop server
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                RunServer.serverStarter.stop();
+                RunServer.serverStarter.stop();//Kill server thread
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                server = new Server();
+                server = new Server();//Start new server
                 try {
-                    serverSocket = new ServerSocket(6666);
+                    serverSocket = new ServerSocket(6666);//Open new server port
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -414,9 +438,9 @@ class Timer extends Thread{
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                RunServer.serverStarter = new ServerStarter();
-                RunServer.serverStarter.start();
-                counter = 0;
+                RunServer.serverStarter = new ServerStarter();//Create new server thread
+                RunServer.serverStarter.start();//Start server thread
+                counter = 0;//Reset count
             }
         } while (true);
     }
