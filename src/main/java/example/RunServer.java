@@ -338,6 +338,26 @@ class Server{
                                 }
                             }
                             break;
+                        case "timer":
+                            for (int i = 1; i < commandParts.length; i++) {
+                                if (commandParts[i].charAt(0) == 't') {//Timer set custom
+                                    Timer.MAX_COUNT = Integer.parseInt(commandParts[i].substring(1));
+                                }
+
+                                if (commandParts[i].charAt(0) == 'r') {//Timer reset to on minute
+                                    Timer.MAX_COUNT = 60;
+                                }
+
+                                if (commandParts[i].charAt(0) == 'm') {//Timer set to one minute
+                                    Timer.MAX_COUNT = 60;
+                                }
+
+                                if (commandParts[i].charAt(0) == 'h') {//Timer set to one hour
+                                    Timer.MAX_COUNT = 360000;
+                                }
+
+                            }
+                            break;
                         default:
                             break;
 
@@ -390,7 +410,7 @@ class Server{
 class Timer extends Thread{
 
     public static int counter;//Timeout counter
-    public static final int MAX_COUNT = 60;//Amount of seconds before timeout
+    public static int MAX_COUNT = 60;//Amount of seconds before timeout
 
     public void run(){
         counter = 0;//Start count at zero
