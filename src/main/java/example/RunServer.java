@@ -1,10 +1,8 @@
 package example;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.security.PublicKey;
 
 import ev3dev.actuators.lego.motors.EV3LargeRegulatedMotor;
 import ev3dev.actuators.lego.motors.EV3MediumRegulatedMotor;
@@ -12,32 +10,62 @@ import ev3dev.sensors.Battery;
 
 import lejos.hardware.port.MotorPort;
 import ev3dev.robotics.tts.Espeak;
-import lejos.hardware.port.SensorPort;
-import lejos.robotics.SampleProvider;
 import lejos.utility.Delay;
 
-public class test_af_server{
+import static example.RunServer.*;
 
+public class RunServer{
 
-    public static void main(String[] args) throws IOException {
+    public static boolean sync;
 
-            Server server = new Server();
-            server.start(6666);
-            server.stop();
+    public static ServerStarter serverStarter;
+    public static Timer timer;
+
+    public static EV3LargeRegulatedMotor motorLeft;
+    public static EV3LargeRegulatedMotor motorRight;
+    public static EV3MediumRegulatedMotor latch;
+    public static ServerSocket serverSocket;
+    public static Server server;
+
+    public static void main(String[] args) {
+        motorLeft = new EV3LargeRegulatedMotor(MotorPort.A);
+        motorRight = new EV3LargeRegulatedMotor(MotorPort.B);
+        latch = new EV3MediumRegulatedMotor(MotorPort.C);
+        server = new Server();
+        try {
+            serverSocket = new ServerSocket(6666);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        serverStarter = new ServerStarter();
+        timer = new Timer();
+        serverStarter.start();
+        sync = false;
+        timer.start();
+    }
+}
+
+class ServerStarter extends Thread {
+
+    public void run() {
+        while (true) {
+            RunServer.sync = true;
+            try {
+                server.start();
+                server.stop();
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+        }
     }
 }
 
 class Server{
 
-    private ServerSocket serverSocket;
-    private Socket clientSocket;
+    public Socket clientSocket;
 
-    private static PrintWriter out;
-    private static BufferedReader in;
-
-    final EV3LargeRegulatedMotor motorLeft = new EV3LargeRegulatedMotor(MotorPort.A);
-    final EV3LargeRegulatedMotor motorRight = new EV3LargeRegulatedMotor(MotorPort.B);
-    static EV3MediumRegulatedMotor latch = new EV3MediumRegulatedMotor(MotorPort.C);
+    public static PrintWriter out;
+    public static BufferedReader in;
 
     public static int currAngle;
     int max_speed = 1;
@@ -124,23 +152,20 @@ class Server{
     }
 
 
-    public void start(int port) throws IOException {
-            serverSocket = new ServerSocket(port);
-            String response;
-            int stopCount = 0;
-
-
+    public void start() throws IOException {
+            String response = "N/A";
             System.out.println("ready to recive");
             voice("what is my purpose");
+            RunServer.sync = true;
             clientSocket = serverSocket.accept();
+            voice("You are inside me now");
             System.out.println("er her");
 
 
             out = new PrintWriter(clientSocket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
-            //GreetClient client = new GreetClient();
-
+            RunServer.sync = true;
 
             initMotorLatchSpeed(1);
             // latch.rotate(90);
@@ -153,11 +178,11 @@ class Server{
 
 
             do {
+
                 out.println("Got it");
                //out.println("latch angle = " + currAngle);
                 response = "N/A";
-
-                while (in.ready()) {
+                if (in.ready()) {
                     response = in.readLine();
                 }
 
@@ -197,7 +222,7 @@ class Server{
                             for (int i = 1; i < commandParts.length; i++) {
                                 if (commandParts[i].charAt(0) == 's') {
                                     vel = Double.parseDouble(commandParts[i].substring(1));
-                                    if (max_speed < vel && overwrite == false){
+                                    if (max_speed < vel && !overwrite){
                                         vel = max_speed;
                                         max_speed++;
                                     }
@@ -303,28 +328,32 @@ class Server{
                 movement(vel, turnLeftMotorSpeed, turnRightMotorSpeed, motorLeft, motorRight);
                 if (!response.equals("N/A")) {
                     System.out.println(response);
-                   /* if(stopCount++ >= 50){
-                        System.out.println("waiting to accept new connection");
-                        clientSocket = serverSocket.accept();
-                        System.out.println("accepted new connection");
-                        stopCount = 0;
-                    }
-                }else{
-                    stopCount = 0;*/
+                    RunServer.sync = true;
                 }
+
+
 
 
             } while (!response.equals("exit"));
                  voice("Bye bitches");
+                 Timer.counter = Timer.MAX_COUNT;
 
+                 while (true){
+
+                 }
         }
 
 
     public void stop() throws IOException {
-        clientSocket.close();
-        serverSocket.close();
+        if(in != null)
         in.close();
+        if(out != null)
         out.close();
+        if(clientSocket != null)
+        clientSocket.close();
+        if(serverSocket != null)
+        serverSocket.close();
+
     }
     public void voice (String arg){
         Espeak TTS = new Espeak();
@@ -336,4 +365,58 @@ class Server{
         TTS.say();
     }
 
+}
+class Timer extends Thread{
+
+    public static int counter;
+    public static final int MAX_COUNT = 60;//sek
+
+    public void run(){
+        counter = 0;
+        do {
+            if (RunServer.sync) {
+                counter = 0;
+                RunServer.sync = false;
+            }
+
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            counter++;
+
+            if(counter > MAX_COUNT){
+                motorLeft.stop();
+                motorRight.stop();
+                latch.stop();
+                try {
+                    server.stop();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                RunServer.serverStarter.stop();
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                server = new Server();
+                try {
+                    serverSocket = new ServerSocket(6666);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                RunServer.serverStarter = new ServerStarter();
+                RunServer.serverStarter.start();
+                counter = 0;
+            }
+        } while (true);
+    }
 }
