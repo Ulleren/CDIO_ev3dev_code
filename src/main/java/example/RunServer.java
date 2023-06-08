@@ -26,6 +26,7 @@ public class RunServer{
     public static EV3MediumRegulatedMotor latch;
     public static ServerSocket serverSocket;
     public static Server server;
+    public static Battery battery = Battery.getInstance();
 
     public static void main(String[] args) {
         motorLeft = new EV3LargeRegulatedMotor(MotorPort.A);
@@ -158,7 +159,7 @@ class Server{
             voice("what is my purpose");
             RunServer.sync = true;
             clientSocket = serverSocket.accept();
-            voice("You are inside me now");
+            voice("Connected. Battery level" + (int)(battery.getVoltage()*100) + " centivolt");
             System.out.println("er her");
 
 
