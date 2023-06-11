@@ -156,6 +156,9 @@ class Server{
 
     public static void drop( double latchVelocity, EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight){
 
+        motorLeft.stop();
+        motorRight.stop();
+        latch.stop();
         initMotorLatchSpeed(latchVelocity);
         moveLatch(0, 90);
         movement(10, 1,1,motorLeft, motorRight);
@@ -223,6 +226,7 @@ class Server{
             voice("what is my purpose");
             RunServer.sync = true;
             clientSocket = serverSocket.accept();
+            RunServer.sync = true;
             voice("Connected");
             //voice("Connected. Battery level" + (int)(battery.getVoltage()*100) + " centivolt");
             System.out.println("er her");
