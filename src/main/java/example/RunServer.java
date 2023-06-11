@@ -135,18 +135,21 @@ class Server{
 
     public static void collect(double vel, double latchVelocity, EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight){
 
+        motorLeft.stop();
+        motorRight.stop();
+        latch.stop();
         initMotorLatchSpeed(latchVelocity);
         //åbne latch
-        moveLatch(0, 90);
+        moveLatch(0, 55);
         //Delay.msDelay(500);
         //kørefrem
         movement(vel, 1,1,motorLeft, motorRight);
         Delay.msDelay(1500);
         motorLeft.stop();
         motorRight.stop();
-        moveLatch(1, 90);
+        initMotorLatchSpeed(15);
+        moveLatch(1, 55);
         latch.stop();
-        //initMotorLatchSpeed(latchVelocity);
         //lukke latch
 
     }
@@ -155,15 +158,62 @@ class Server{
 
         initMotorLatchSpeed(latchVelocity);
         moveLatch(0, 90);
-        movement(12, 1,1,motorLeft, motorRight);
+        movement(10, 1,1,motorLeft, motorRight);
         Delay.msDelay(750);
         motorLeft.stop();
         motorRight.stop();
+       /*
+        int vel = 1;
+        for (int i = 0; i < 5; i++){
+            movement(vel, 1,1,motorLeft, motorRight);
+            vel+=2;
+        }
+        Delay.msDelay(100);
+        for (int i = 0; i < 5; i++){
+            movement(vel, 1,1,motorLeft, motorRight);
+            vel-=2;
+        }*/
+
+
+        movement(1, -1,-1,motorLeft, motorRight);
+        Delay.msDelay(3000);
+        motorLeft.stop();
+        motorRight.stop();
+        moveLatch(1, 90);
+       /* movement(1, -1,1,motorLeft, motorRight);
+        Delay.msDelay(4650);
+        motorLeft.stop();
+        motorRight.stop();
+        movement(1, 1,1,motorLeft, motorRight);
+        Delay.msDelay(1000);
+        motorLeft.stop();
+        motorRight.stop();*/
         //movement(20, -1,-1,motorLeft, motorRight);
         //moveLatch(1, 90);
 
         latch.stop();
         //ca. 30-36 cm afstand fra målet
+    }
+
+    public static void corner(double vel, double latchVelocity, EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight){
+        initMotorLatchSpeed(latchVelocity);
+        //åbne latch
+        moveLatch(0, 45);
+        //Delay.msDelay(500);
+        //kørefrem
+        movement(0.8, 0,0,motorLeft, motorRight);
+        Delay.msDelay(5000);
+        motorLeft.stop();
+        motorRight.stop();
+        moveLatch(1, 45);
+        latch.stop();
+        movement(vel, -1,-1,motorLeft, motorRight);
+        Delay.msDelay(1000);
+        motorLeft.stop();
+        motorRight.stop();
+        //initMotorLatchSpeed(latchVelocity);
+        //lukke latch
+
     }
 
 
@@ -173,7 +223,8 @@ class Server{
             voice("what is my purpose");
             RunServer.sync = true;
             clientSocket = serverSocket.accept();
-            voice("Connected. Battery level" + (int)(battery.getVoltage()*100) + " centivolt");
+            voice("Connected");
+            //voice("Connected. Battery level" + (int)(battery.getVoltage()*100) + " centivolt");
             System.out.println("er her");
 
 
@@ -199,7 +250,7 @@ class Server{
                 response = "N/A";//Initiate response
 
                 //Read client command
-                if (in.ready()) {
+                while (in.ready()) {
                     response = in.readLine();
                 }
 
@@ -310,8 +361,17 @@ class Server{
 
 
                         case "drop":
-                            drop(15, motorLeft, motorRight);
+                            drop(4, motorLeft, motorRight);
                             vel = 0;
+                            break;
+
+                        case "corner"://corner and wall collect: 15 cm with 0.5cm error margin
+                            corner(2,3, motorLeft, motorRight);
+                            vel = 0;
+                            break;
+
+                        case "battery"://corner and wall collect: 15 cm with 0.5cm error margin
+                            voice("Battery level" + (int)(battery.getVoltage()*100) + " centivolt");
                             break;
 
                         case "stop":
@@ -340,21 +400,26 @@ class Server{
                             break;
                         case "timer":
                             for (int i = 1; i < commandParts.length; i++) {
-                                if (commandParts[i].charAt(0) == 't') {//Timer set custom
+                                if (commandParts[i].charAt(0) == 't') {//Timer set custom seconds
                                     Timer.MAX_COUNT = Integer.parseInt(commandParts[i].substring(1));
+                                    voice("Timer set to" + Timer.MAX_COUNT + "seconds");
                                 }
 
                                 if (commandParts[i].charAt(0) == 'r') {//Timer reset to on minute
                                     Timer.MAX_COUNT = 60;
+                                    voice("Timer reset");
                                 }
 
                                 if (commandParts[i].charAt(0) == 'm') {//Timer set to one minute
                                     Timer.MAX_COUNT = 60;
+                                    voice("Timer set to one minute");
                                 }
 
                                 if (commandParts[i].charAt(0) == 'h') {//Timer set to one hour
                                     Timer.MAX_COUNT = 360000;
+                                    voice("Timer set to one hour");
                                 }
+                               // voice("Timer set to" + Timer.MAX_COUNT + "seconds");
 
                             }
                             break;
@@ -371,10 +436,14 @@ class Server{
                     System.out.println(response);
                     RunServer.sync = true;
                 }
-
+               /* if(Timer.counter == 10){
+                    motorLeft.stop();
+                    motorRight.stop();
+                    latch.stop();
+                }*/
 
             } while (!response.equals("exit"));
-                 voice("Bye bitches");//exit response
+                 voice("Goodbye world");//exit response
                  Timer.counter = Timer.MAX_COUNT;//Timer thread closes server thread and opens new.
 
                  while (true){
@@ -395,7 +464,7 @@ class Server{
     }
 
     //TTS method
-    public void voice (String arg){
+    public static void voice(String arg){
         Espeak TTS = new Espeak();
         TTS.setVoice("en");
         TTS.setSpeedReading(105);
@@ -428,6 +497,12 @@ class Timer extends Thread{
             }
 
             counter++;//Increase timer count
+
+            if(counter > 10){
+                motorLeft.stop();
+                motorRight.stop();
+                latch.stop();
+            }
 
             if(counter > MAX_COUNT){//If timer reaches max count
 
