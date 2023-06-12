@@ -483,7 +483,7 @@ class Server{
 class Timer extends Thread{
 
     public static int counter;//Timeout counter
-    public static int MAX_COUNT = 60;//Amount of seconds before timeout
+    public static int MAX_COUNT = 30;//Amount of seconds before timeout
 
     public void run(){
         counter = 0;//Start count at zero
@@ -502,7 +502,7 @@ class Timer extends Thread{
 
             counter++;//Increase timer count
 
-            if(counter > 10){
+            if(counter > 15){
                 motorLeft.stop();
                 motorRight.stop();
                 latch.stop();
