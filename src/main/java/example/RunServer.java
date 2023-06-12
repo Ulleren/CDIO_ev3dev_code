@@ -92,10 +92,9 @@ class Server{
        // System.out.println("Defining motor speed to "+latchSpeed+" degrees/s\n");
         latch.setSpeed((int) latchSpeed);
     }
-
     //Method to move latch
     public static void moveLatch(int dir, double angToTurn){
-        double relation=5.432; //relation between degrees to turn from angle in degrees and motor position
+        double relation=5; //relation between degrees to turn from angle in degrees and motor position (5.432)
         int angg= (int) (angToTurn*relation);
         if(dir==0){ //open latch
             latch.rotate(angg);
@@ -105,13 +104,12 @@ class Server{
 
     }
 
-
     public static void movement(double vel, double turnLeftMotorSpeed, double turnRightMotorSpeed, EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight ){
         //begin to move
 
         double motorVelocity = 5 * vel * (int) Battery.getInstance().getVoltage();
-        int leftSum = (int) (20 * turnLeftMotorSpeed * Battery.getInstance().getVoltage() + motorVelocity);
-        int rightSum = (int) (20 * turnRightMotorSpeed * Battery.getInstance().getVoltage() + motorVelocity);
+        int leftSum = (int) (turnLeftMotorSpeed * (20 * Battery.getInstance().getVoltage())+ motorVelocity);
+        int rightSum = (int) (turnRightMotorSpeed * (20 * Battery.getInstance().getVoltage())+ motorVelocity);
 
 
         if (leftSum < 0) {
@@ -133,38 +131,45 @@ class Server{
         // client.sendMessage("Got it");
     }
 
+    public static void latchCal(){
+        latch.setSpeed(300);
+        latch.rotateTo(0);
+        Delay.msDelay(200);
+        latch.rotateTo(0);
+    }
+
     public static void collect(double vel, double latchVelocity, EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight){
 
         motorLeft.stop();
         motorRight.stop();
-        latch.stop();
-        initMotorLatchSpeed(latchVelocity);
-        //åbne latch
-        moveLatch(0, 55);
-        //Delay.msDelay(500);
-        //kørefrem
-        movement(vel, 1,1,motorLeft, motorRight);
-        Delay.msDelay(1500);
+        System.out.println("start: "+latch.getPosition());
+        latch.setSpeed(500);
+        latch.rotateTo(210);
+        movement(5, 1,1,motorLeft, motorRight);//vel
+        Delay.msDelay(500);//1500
+        latch.setSpeed(1000);
+        latch.rotateTo(60);
+        Delay.msDelay(300);//1500
         motorLeft.stop();
         motorRight.stop();
-        initMotorLatchSpeed(15);
-        moveLatch(1, 55);
-        latch.stop();
-        //lukke latch
-
+        latchCal();
     }
 
     public static void drop( double latchVelocity, EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight){
+        //ca. 15 cm afstand fra målet
 
         motorLeft.stop();
         motorRight.stop();
-        latch.stop();
-        initMotorLatchSpeed(latchVelocity);
-        moveLatch(0, 90);
+        //latch.stop();
+
+        latch.setSpeed(500);
+        latch.rotateTo(400);
+       // moveLatch(0, 90);
         movement(10, 1,1,motorLeft, motorRight);
         Delay.msDelay(750);
         motorLeft.stop();
         motorRight.stop();
+        Delay.msDelay(400);
        /*
         int vel = 1;
         for (int i = 0; i < 5; i++){
@@ -176,46 +181,33 @@ class Server{
             movement(vel, 1,1,motorLeft, motorRight);
             vel-=2;
         }*/
-
-
-        movement(1, -1,-1,motorLeft, motorRight);
-        Delay.msDelay(3000);
+        movement(2, -1,-1,motorLeft, motorRight);//1
+        Delay.msDelay(2000);//3000
+        latch.rotateTo(0);
+        //movement(10, -1,-1,motorLeft, motorRight);//1
+        //Delay.msDelay(200);//3000
         motorLeft.stop();
         motorRight.stop();
-        moveLatch(1, 90);
-       /* movement(1, -1,1,motorLeft, motorRight);
-        Delay.msDelay(4650);
-        motorLeft.stop();
-        motorRight.stop();
-        movement(1, 1,1,motorLeft, motorRight);
-        Delay.msDelay(1000);
-        motorLeft.stop();
-        motorRight.stop();*/
-        //movement(20, -1,-1,motorLeft, motorRight);
-        //moveLatch(1, 90);
-
-        latch.stop();
-        //ca. 30-36 cm afstand fra målet
+        latchCal();
     }
 
     public static void corner(double vel, double latchVelocity, EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight){
-        initMotorLatchSpeed(latchVelocity);
+        //initMotorLatchSpeed(latchVelocity);
         //åbne latch
         moveLatch(0, 45);
-        //Delay.msDelay(500);
+        latch.setSpeed(300);
         //kørefrem
         movement(0.8, 0,0,motorLeft, motorRight);
+        latch.rotateTo(250);
         Delay.msDelay(5000);
         motorLeft.stop();
         motorRight.stop();
-        moveLatch(1, 45);
-        latch.stop();
-        movement(vel, -1,-1,motorLeft, motorRight);
-        Delay.msDelay(1000);
+        latch.rotateTo(0);
+        movement(1, -1,-1,motorLeft, motorRight);//vel
+        Delay.msDelay(4000);//1000
         motorLeft.stop();
         motorRight.stop();
-        //initMotorLatchSpeed(latchVelocity);
-        //lukke latch
+        latchCal();
 
     }
 
@@ -238,7 +230,6 @@ class Server{
             RunServer.sync = true;
 
             initMotorLatchSpeed(1);
-            // latch.rotate(90);
             double vel = 0; //robots velocity
             double turnLeftMotorSpeed = 0; //left wheel speed rad/s
             double turnRightMotorSpeed = 0; //right wheel speed rad/s
@@ -363,6 +354,27 @@ class Server{
                             }
                             break;
 
+                        case "test":
+
+                                collect(0, latchVelocity, motorLeft, motorRight);
+                                collect(0, latchVelocity, motorLeft, motorRight);
+                                collect(0, latchVelocity, motorLeft, motorRight);
+                                collect(0, latchVelocity, motorLeft, motorRight);
+                                drop(4, motorLeft, motorRight);
+                                collect(0, latchVelocity, motorLeft, motorRight);
+                                collect(0, latchVelocity, motorLeft, motorRight);
+                                collect(0, latchVelocity, motorLeft, motorRight);
+                                collect(0, latchVelocity, motorLeft, motorRight);
+                                drop(4, motorLeft, motorRight);
+                                corner(2,3, motorLeft, motorRight);
+                                corner(2,3, motorLeft, motorRight);
+                                corner(2,3, motorLeft, motorRight);
+                                drop(4, motorLeft, motorRight);
+                                vel = 0;
+
+                            break;
+
+
 
                         case "drop":
                             drop(4, motorLeft, motorRight);
@@ -394,6 +406,8 @@ class Server{
                                 if (commandParts[i].charAt(0) == 't') {
                                     turnLeftMotorSpeed = 0;
                                     turnRightMotorSpeed = 0;
+                                    //motorLeft.stop();
+                                    //motorRight.stop();
                                     // response = client.sendMessage("stop turn");
                                 }
                                 // "stop -g" stop gate
@@ -483,7 +497,7 @@ class Server{
 class Timer extends Thread{
 
     public static int counter;//Timeout counter
-    public static int MAX_COUNT = 60;//Amount of seconds before timeout
+    public static int MAX_COUNT = 30;//Amount of seconds before timeout
 
     public void run(){
         counter = 0;//Start count at zero
@@ -502,11 +516,11 @@ class Timer extends Thread{
 
             counter++;//Increase timer count
 
-            if(counter > 10){
+             if(counter > 10){
                 motorLeft.stop();
                 motorRight.stop();
                 latch.stop();
-            }
+             }
 
             if(counter > MAX_COUNT){//If timer reaches max count
 
