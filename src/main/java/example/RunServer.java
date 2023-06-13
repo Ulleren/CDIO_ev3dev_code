@@ -24,6 +24,7 @@ public class RunServer{
     public static EV3LargeRegulatedMotor motorLeft;
     public static EV3LargeRegulatedMotor motorRight;
     public static EV3MediumRegulatedMotor latch;
+    //public static EV3MediumRegulatedMotor fan;
 
     //Defined server socket and server class
     public static ServerSocket serverSocket;
@@ -38,6 +39,8 @@ public class RunServer{
         motorLeft = new EV3LargeRegulatedMotor(MotorPort.A);
         motorRight = new EV3LargeRegulatedMotor(MotorPort.B);
         latch = new EV3MediumRegulatedMotor(MotorPort.C);
+       //fan = new EV3MediumRegulatedMotor(MotorPort.D);
+
 
         //Instantiate server
         server = new Server();
@@ -109,8 +112,11 @@ class Server{
         //begin to move
 
         double motorVelocity = 5 * vel * (int) Battery.getInstance().getVoltage();
+        //System.out.println("Motor vel: " + motorVelocity + "\n");
         int leftSum = (int) (turnLeftMotorSpeed * (20 * Battery.getInstance().getVoltage())+ motorVelocity);
         int rightSum = (int) (turnRightMotorSpeed * (20 * Battery.getInstance().getVoltage())+ motorVelocity);
+        //System.out.println("left: " + leftSum + "\n");
+        //System.out.println("right: " + rightSum + "\n");
 
 
         if (leftSum < 0) {
@@ -160,7 +166,7 @@ class Server{
         latchCal();
     }
 
-    public static void drop( double latchVelocity, EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight){
+    public static void drop(double vel, int delay, double latchVelocity, EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight){
         //ca. 15 cm afstand fra målet
 
         motorLeft.stop();
@@ -169,31 +175,35 @@ class Server{
 
         latch.setSpeed(500);
         latch.rotateTo(400);
-       // moveLatch(0, 90);
-        movement(10, 1,1,motorLeft, motorRight);
-        Delay.msDelay(750);
-        motorLeft.stop();
-        motorRight.stop();
-        Delay.msDelay(400);
-       /*
-        int vel = 1;
-        for (int i = 0; i < 5; i++){
+        System.out.println("Open "+latch.getPosition() + "\n");
+        System.out.println("Driving \n");
+        //movement(vel, 1,1,motorLeft, motorRight);
+        vel = 0;
+        for (int i = 0; i < 9; i++){
             movement(vel, 1,1,motorLeft, motorRight);
+            Delay.msDelay(50);
             vel+=2;
         }
-        Delay.msDelay(100);
-        for (int i = 0; i < 5; i++){
+        //movement(18, 1,1,motorLeft, motorRight);
+        Delay.msDelay(delay);
+
+        for (int i = 0; i < 10; i++){
             movement(vel, 1,1,motorLeft, motorRight);
             vel-=2;
-        }*/
-        movement(2, -1,-1,motorLeft, motorRight);//1
+        }
+        vel = 0;
+        //Delay.msDelay(750);
+        Delay.msDelay(delay);
+        motorLeft.stop();
+        motorRight.stop();
+        System.out.println("Backing \n");
+        movement(3, -1,-1,motorLeft, motorRight);//1
         Delay.msDelay(2000);//3000
         latch.rotateTo(0);
-        //movement(10, -1,-1,motorLeft, motorRight);//1
-        //Delay.msDelay(200);//3000
         motorLeft.stop();
         motorRight.stop();
         latchCal();
+        System.out.println("Close "+latch.getPosition() + "\n");
     }
 
     public static void corner(double vel, double latchVelocity, EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight){
@@ -362,7 +372,18 @@ class Server{
                             break;
 
                         case "drop"://drop 20 cm from wall
-                            drop(4, motorLeft, motorRight);
+                            for (int i = 1; i < commandParts.length; i++) {
+                                if (commandParts[i].charAt(0) == 's') {
+                                    vel = Double.parseDouble(commandParts[i].substring(1)); //drive speed
+                                }
+
+                                if (commandParts[i].charAt(0) == 'm') {
+                                    delay = Integer.parseInt(commandParts[i].substring(1));
+                                }
+
+                            }
+                            drop(vel,delay,latchVelocity, motorLeft, motorRight);
+                            //delay = 2000;
                             vel = 0;
                             break;
 
@@ -428,8 +449,10 @@ class Server{
                             voice("Battery level" + (int)(battery.getVoltage()*100) + " centivolt");
                             break;
 
-                        case "test"://test command for automated sequence
-                            collect(vel, delay, motorLeft, motorRight);
+                        case "test":
+
+                            //test command for automated sequence
+                            /*collect(vel, delay, motorLeft, motorRight);
                             collect(vel, delay, motorLeft, motorRight);
                             collect(vel, delay, motorLeft, motorRight);
                             collect(vel, delay, motorLeft, motorRight);
@@ -444,7 +467,7 @@ class Server{
                             corner(2,3, motorLeft, motorRight);
                             drop(4, motorLeft, motorRight);
                             vel = 0;
-                            break;
+                            break;*/
 
                         default:
                             break;
