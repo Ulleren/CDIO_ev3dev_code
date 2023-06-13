@@ -84,6 +84,7 @@ class Server{
     int max_speed = 1;//Define max speed for robot acceleration
 
     Boolean overwrite = false;//flag to overwrite acceleration
+    public static boolean back_flag = false;//flag for driving backwards in collect
 
     //Set speed of latch
     public static void initMotorLatchSpeed(double latchSpeed){
@@ -138,7 +139,7 @@ class Server{
         latch.rotateTo(0);
     }
 
-    public static void collect(double vel, double latchVelocity, EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight){
+    public static void collect(double vel, int delay, EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight){
 
         motorLeft.stop();
         motorRight.stop();
@@ -146,12 +147,16 @@ class Server{
         latch.setSpeed(500);
         latch.rotateTo(210);
         movement(5, 1,1,motorLeft, motorRight);//vel
-        Delay.msDelay(500);//1500
+        Delay.msDelay(delay);//1500
         latch.setSpeed(1000);
         latch.rotateTo(60);
         Delay.msDelay(300);//1500
         motorLeft.stop();
         motorRight.stop();
+        if (back_flag == true){
+            movement(2, -1,-1,motorLeft, motorRight);//vel
+            Delay.msDelay(3000);
+        }
         latchCal();
     }
 
@@ -211,6 +216,11 @@ class Server{
 
     }
 
+    public static void killMotors(){
+        motorLeft.stop();
+        motorRight.stop();
+        latch.stop();
+    }
 
     public void start() throws IOException {
             String response = "N/A";
@@ -223,13 +233,13 @@ class Server{
             //voice("Connected. Battery level" + (int)(battery.getVoltage()*100) + " centivolt");
             System.out.println("er her");
 
-
             out = new PrintWriter(clientSocket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
             RunServer.sync = true;
 
             initMotorLatchSpeed(1);
+            int delay = 500;
             double vel = 0; //robots velocity
             double turnLeftMotorSpeed = 0; //left wheel speed rad/s
             double turnRightMotorSpeed = 0; //right wheel speed rad/s
@@ -237,10 +247,8 @@ class Server{
             double langle; //Latch angle
             int mangle; //Custom Latch angle(Maybe useless)
 
-
         //Robot runtime loop
             do {
-
                 out.println("Got it");//ACK from server to client
                 response = "N/A";//Initiate response
 
@@ -252,6 +260,7 @@ class Server{
                 //Semicolon spilts commands
                 String[] commands = response.split(";");
 
+
                 //Main commands
                 for (String command : commands) {
                     String[] commandParts = command.replace(" ", "").split("-");
@@ -262,22 +271,20 @@ class Server{
 
                                 if (commandParts[i].charAt(0) == 'r') {
                                     cc = false;
-                                    // response = client.sendMessage("Turning Right");
                                 }
+
                                 if (commandParts[i].charAt(0) == 'l') {
                                     cc = true;
-                                    //response = client.sendMessage("Turning Left");
                                 }
 
                                 if (commandParts[i].charAt(0) == 's') {
                                     if (!cc) {
                                         turnLeftMotorSpeed = Double.parseDouble(commandParts[i].substring(1));
                                         turnRightMotorSpeed = Double.parseDouble(commandParts[i].substring(1)) * -1;
-                                        // response = client.sendMessage("Turn right");
+
                                     } else {
                                         turnLeftMotorSpeed = Double.parseDouble(commandParts[i].substring(1)) * -1;
                                         turnRightMotorSpeed = Double.parseDouble(commandParts[i].substring(1));
-                                        //  response = client.sendMessage("turn left");
                                     }
                                 }
                             }
@@ -291,37 +298,17 @@ class Server{
                                         vel = max_speed;
                                         max_speed++;
                                     }
-                                    //  response = client.sendMessage("drive");
                                 }
 
                                 if (commandParts[i].charAt(0) == 'b') {
                                     turnRightMotorSpeed = Double.parseDouble(commandParts[i].substring(1)) * -1;
                                     turnLeftMotorSpeed = Double.parseDouble(commandParts[i].substring(1)) * -1;
-                                    //  response = client.sendMessage("Back");
                                 }
 
                                 if (commandParts[i].charAt(0) == 'o') {
                                     overwrite = true;
                                 }
-
                             }
-                            break;
-
-                        case "collect":
-
-                            for (int i = 1; i < commandParts.length; i++) {
-                                if (commandParts[i].charAt(0) == 's') {
-                                    vel = Double.parseDouble(commandParts[i].substring(1)); //drive speed
-
-                                }
-
-                                if (commandParts[i].charAt(0) == 'g') {
-                                    latchVelocity = Double.parseDouble(commandParts[i].substring(1));
-                                }
-
-                            }
-                            collect(vel, latchVelocity, motorLeft, motorRight);
-                            vel = 0;
                             break;
 
                         case "gate":
@@ -354,29 +341,27 @@ class Server{
                             }
                             break;
 
-                        case "test":
+                        case "collect":
+                            for (int i = 1; i < commandParts.length; i++) {
+                                if (commandParts[i].charAt(0) == 's') {
+                                    vel = Double.parseDouble(commandParts[i].substring(1)); //drive speed
+                                }
 
-                                collect(0, latchVelocity, motorLeft, motorRight);
-                                collect(0, latchVelocity, motorLeft, motorRight);
-                                collect(0, latchVelocity, motorLeft, motorRight);
-                                collect(0, latchVelocity, motorLeft, motorRight);
-                                drop(4, motorLeft, motorRight);
-                                collect(0, latchVelocity, motorLeft, motorRight);
-                                collect(0, latchVelocity, motorLeft, motorRight);
-                                collect(0, latchVelocity, motorLeft, motorRight);
-                                collect(0, latchVelocity, motorLeft, motorRight);
-                                drop(4, motorLeft, motorRight);
-                                corner(2,3, motorLeft, motorRight);
-                                corner(2,3, motorLeft, motorRight);
-                                corner(2,3, motorLeft, motorRight);
-                                drop(4, motorLeft, motorRight);
-                                vel = 0;
+                                if (commandParts[i].charAt(0) == 'm') {
+                                    delay = Integer.parseInt(commandParts[i].substring(1));
+                                }
 
+                                if (commandParts[i].charAt(0) == 'b') {
+                                    back_flag = true;
+                                }
+                            }
+                            collect(vel, delay, motorLeft, motorRight);
+                            delay = 500;
+                            vel = 0;
+                            back_flag = false;
                             break;
 
-
-
-                        case "drop":
+                        case "drop"://drop 20 cm from wall
                             drop(4, motorLeft, motorRight);
                             vel = 0;
                             break;
@@ -384,10 +369,6 @@ class Server{
                         case "corner"://corner and wall collect: 15 cm with 0.5cm error margin
                             corner(2,3, motorLeft, motorRight);
                             vel = 0;
-                            break;
-
-                        case "battery"://corner and wall collect: 15 cm with 0.5cm error margin
-                            voice("Battery level" + (int)(battery.getVoltage()*100) + " centivolt");
                             break;
 
                         case "stop":
@@ -416,6 +397,7 @@ class Server{
                                 }
                             }
                             break;
+
                         case "timer":
                             for (int i = 1; i < commandParts.length; i++) {
                                 if (commandParts[i].charAt(0) == 't') {//Timer set custom seconds
@@ -441,6 +423,29 @@ class Server{
 
                             }
                             break;
+
+                        case "battery":
+                            voice("Battery level" + (int)(battery.getVoltage()*100) + " centivolt");
+                            break;
+
+                        case "test"://test command for automated sequence
+                            collect(vel, delay, motorLeft, motorRight);
+                            collect(vel, delay, motorLeft, motorRight);
+                            collect(vel, delay, motorLeft, motorRight);
+                            collect(vel, delay, motorLeft, motorRight);
+                            drop(4, motorLeft, motorRight);
+                            collect(vel, delay, motorLeft, motorRight);
+                            collect(vel, delay, motorLeft, motorRight);
+                            collect(vel, delay, motorLeft, motorRight);
+                            collect(vel, delay, motorLeft, motorRight);
+                            drop(4, motorLeft, motorRight);
+                            corner(2,3, motorLeft, motorRight);
+                            corner(2,3, motorLeft, motorRight);
+                            corner(2,3, motorLeft, motorRight);
+                            drop(4, motorLeft, motorRight);
+                            vel = 0;
+                            break;
+
                         default:
                             break;
 
@@ -454,11 +459,12 @@ class Server{
                     System.out.println(response);
                     RunServer.sync = true;
                 }
-               /* if(Timer.counter == 10){
-                    motorLeft.stop();
-                    motorRight.stop();
-                    latch.stop();
-                }*/
+
+                if(Timer.counter == 10){
+                    killMotors();
+                    turnLeftMotorSpeed = 0;
+                    turnRightMotorSpeed = 0;
+                }
 
             } while (!response.equals("exit"));
                  voice("Goodbye world");//exit response
@@ -516,18 +522,14 @@ class Timer extends Thread{
 
             counter++;//Increase timer count
 
-             if(counter > 10){
-                motorLeft.stop();
-                motorRight.stop();
-                latch.stop();
+             if(counter == 10){
+                 Server.killMotors();
              }
 
             if(counter > MAX_COUNT){//If timer reaches max count
 
                 //Stop robot motors
-                motorLeft.stop();
-                motorRight.stop();
-                latch.stop();
+                Server.killMotors();
 
                 try {
                     server.stop();//Stop server
