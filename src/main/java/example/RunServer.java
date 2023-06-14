@@ -206,6 +206,25 @@ class Server{
         System.out.println("Close "+latch.getPosition() + "\n");
     }
 
+    public static void fdrop( EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight){
+        motorLeft.stop();
+        motorRight.stop();
+        movement(2, 0,0,motorLeft, motorRight);
+        latch.setSpeed(200);
+        latch.rotate(400);
+        Delay.msDelay(400);//3000
+        latch.rotate(150);
+        motorLeft.stop();
+        motorRight.stop();
+        Delay.msDelay(3000);//3000
+        movement(3, -1,-1,motorLeft, motorRight);
+        Delay.msDelay(2000);
+        latch.rotateTo(0);
+        motorLeft.stop();
+        motorRight.stop();
+        latchCal();
+    }
+
     public static void corner(double vel, double latchVelocity, EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight){
         //initMotorLatchSpeed(latchVelocity);
         //åbne latch
@@ -214,7 +233,7 @@ class Server{
         //kørefrem
         movement(0.8, 0,0,motorLeft, motorRight);
         latch.rotateTo(250);
-        Delay.msDelay(5000);
+        Delay.msDelay(4500);
         motorLeft.stop();
         motorRight.stop();
         latch.rotateTo(0);
@@ -256,6 +275,7 @@ class Server{
             double latchVelocity = 1; //Latch velocity read from client
             double langle; //Latch angle
             int mangle; //Custom Latch angle(Maybe useless)
+            int angle = 0;
 
         //Robot runtime loop
             do {
@@ -345,7 +365,7 @@ class Server{
                                 }
 
                                 if (commandParts[i].charAt(0) == 'g') { //gate speed
-                                    latchVelocity = Double.parseDouble(commandParts[i].substring(1));
+                                    latch.setSpeed(Integer.parseInt(commandParts[i].substring(1)));
                                 }
 
                             }
@@ -381,9 +401,12 @@ class Server{
                                     delay = Integer.parseInt(commandParts[i].substring(1));
                                 }
 
+                                if (commandParts[i].charAt(0) == 'a') {
+                                    angle = Integer.parseInt(commandParts[i].substring(1));
+                                }
+
                             }
-                            drop(vel,delay,latchVelocity, motorLeft, motorRight);
-                            //delay = 2000;
+                            fdrop(motorLeft, motorRight);
                             vel = 0;
                             break;
 
@@ -450,24 +473,24 @@ class Server{
                             break;
 
                         case "test":
+                            for (int i = 1; i < commandParts.length; i++) {
+                                if (commandParts[i].charAt(0) == 's') {
+                                    vel = Double.parseDouble(commandParts[i].substring(1)); //drive speed
+                                }
 
-                            //test command for automated sequence
-                            /*collect(vel, delay, motorLeft, motorRight);
-                            collect(vel, delay, motorLeft, motorRight);
-                            collect(vel, delay, motorLeft, motorRight);
-                            collect(vel, delay, motorLeft, motorRight);
-                            drop(4, motorLeft, motorRight);
-                            collect(vel, delay, motorLeft, motorRight);
-                            collect(vel, delay, motorLeft, motorRight);
-                            collect(vel, delay, motorLeft, motorRight);
-                            collect(vel, delay, motorLeft, motorRight);
-                            drop(4, motorLeft, motorRight);
-                            corner(2,3, motorLeft, motorRight);
-                            corner(2,3, motorLeft, motorRight);
-                            corner(2,3, motorLeft, motorRight);
-                            drop(4, motorLeft, motorRight);
-                            vel = 0;
-                            break;*/
+                                if (commandParts[i].charAt(0) == 'm') {
+                                    delay = Integer.parseInt(commandParts[i].substring(1));
+                                }
+
+                                if (commandParts[i].charAt(0) == 'a') {
+                                    delay = Integer.parseInt(commandParts[i].substring(1));
+                                }
+
+                            }
+
+
+                            //collect(vel, delay, motorLeft, motorRight);
+                        fdrop(motorLeft, motorRight);
 
                         default:
                             break;
@@ -483,11 +506,11 @@ class Server{
                     RunServer.sync = true;
                 }
 
-                if(Timer.counter == 10){
+               /* if(Timer.counter == 10){
                     killMotors();
                     turnLeftMotorSpeed = 0;
                     turnRightMotorSpeed = 0;
-                }
+                }*/
 
             } while (!response.equals("exit"));
                  voice("Goodbye world");//exit response
@@ -545,9 +568,9 @@ class Timer extends Thread{
 
             counter++;//Increase timer count
 
-             if(counter == 10){
+             /*if(counter == 10){
                  Server.killMotors();
-             }
+             }*/
 
             if(counter > MAX_COUNT){//If timer reaches max count
 
