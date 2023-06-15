@@ -231,9 +231,9 @@ class Server{
         moveLatch(0, 45);
         latch.setSpeed(300);
         //kørefrem
-        movement(0.8, 0,0,motorLeft, motorRight);
+        movement(1, 0,0,motorLeft, motorRight);
         latch.rotateTo(250);
-        Delay.msDelay(4500);
+        Delay.msDelay(4300);
         motorLeft.stop();
         motorRight.stop();
         latch.rotateTo(0);
