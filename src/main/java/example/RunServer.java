@@ -76,7 +76,7 @@ class ServerStarter extends Thread {
 }
 
 //Server class
-class Server{
+class Server {
 
     public Socket clientSocket;//Create client socket
     public static PrintWriter out;//Define server output buffer
@@ -90,33 +90,48 @@ class Server{
     public static boolean back_flag = false;//flag for driving backwards in collect
 
     //Set speed of latch
-    public static void initMotorLatchSpeed(double latchSpeed){
+    public static void initMotorLatchSpeed(double latchSpeed) {
         //convert rad/s to degrees/s
-        latchSpeed= (latchSpeed*57.2957);
-       // System.out.println("Defining motor speed to "+latchSpeed+" degrees/s\n");
+        latchSpeed = (latchSpeed * 57.2957);
+        // System.out.println("Defining motor speed to "+latchSpeed+" degrees/s\n");
         latch.setSpeed((int) latchSpeed);
     }
+
     //Method to move latch
-    public static void moveLatch(int dir, double angToTurn){
-        double relation=5; //relation between degrees to turn from angle in degrees and motor position (5.432)
-        int angg= (int) (angToTurn*relation);
-        if(dir==0){ //open latch
+    public static void moveLatch(int dir, double angToTurn) {
+        double relation = 5; //relation between degrees to turn from angle in degrees and motor position (5.432)
+        int angg = (int) (angToTurn * relation);
+        if (dir == 0) { //open latch
             latch.rotate(angg);
-        }else{ //close latch
+        } else { //close latch
             latch.rotate((-angg));
         }
 
     }
 
-    public static void movement(double vel, double turnLeftMotorSpeed, double turnRightMotorSpeed, EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight ){
+    public static void reversal(int rev_speed, int delay, EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight){
+        rev_speed = (int)(rev_speed * 5 * Battery.getInstance().getVoltage());
+        motorLeft.setSpeed(rev_speed);
+        motorRight.setSpeed(rev_speed);
+        motorLeft.backward();
+        motorRight.backward();
+        Delay.msDelay(delay);
+        motorRight.stop();
+        motorLeft.stop();
+        motorLeft.setSpeed(0);
+        motorRight.setSpeed(0);
+    }
+
+    public static void movement(double vel, double turnLeftMotorSpeed, double turnRightMotorSpeed, EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight) {
         //begin to move
 
         double motorVelocity = 5 * vel * (int) Battery.getInstance().getVoltage();
         //System.out.println("Motor vel: " + motorVelocity + "\n");
-        int leftSum = (int) (turnLeftMotorSpeed * (20 * Battery.getInstance().getVoltage())+ motorVelocity);
-        int rightSum = (int) (turnRightMotorSpeed * (20 * Battery.getInstance().getVoltage())+ motorVelocity);
+        int leftSum = (int) (turnLeftMotorSpeed * (20 * Battery.getInstance().getVoltage()) + motorVelocity);
+        int rightSum = (int) (turnRightMotorSpeed * (20 * Battery.getInstance().getVoltage()) + motorVelocity);
         //System.out.println("left: " + leftSum + "\n");
         //System.out.println("right: " + rightSum + "\n");
+
 
 
         if (leftSum < 0) {
@@ -135,7 +150,6 @@ class Server{
             motorRight.forward();
         }
 
-        // client.sendMessage("Got it");
     }
 
     public static void latchCal(){
@@ -278,6 +292,7 @@ class Server{
             double langle; //Latch angle
             int mangle; //Custom Latch angle(Maybe useless)
             int angle = 0;
+            int rev_speed = 0;
 
         //Robot runtime loop
             do {
@@ -346,23 +361,34 @@ class Server{
                             break;
 
                         case "reverse":
+                            rev_speed = 3;
                             for (int i = 1; i < commandParts.length; i++) {
                                 if (commandParts[i].charAt(0) == 's') {
-                                    vel = Double.parseDouble(commandParts[i].substring(1));
+                                    rev_speed = Integer.parseInt(commandParts[i].substring(1));
                                 }
+
                                 if (commandParts[i].charAt(0) == 'm') {
                                     delay = Integer.parseInt(commandParts[i].substring(1));
                                 }
-                                movement(vel, -1,-1,motorLeft, motorRight);
+                            }
+                                reversal(rev_speed,delay,motorLeft,motorRight);
+                                /*rev_speed = (int)(rev_speed * 5 * Battery.getInstance().getVoltage());
+                                motorLeft.setSpeed(rev_speed);
+                                motorRight.setSpeed(rev_speed);
+                                motorLeft.backward();
+                                motorRight.backward();
                                 Delay.msDelay(delay);
                                 motorRight.stop();
                                 motorLeft.stop();
-                                delay = 500;
+                                motorLeft.setSpeed(0);
+                                motorRight.setSpeed(0);*/
                                 vel = 0;
+                                rev_speed = 0;
+                                turnRightMotorSpeed = 0;
+                                turnLeftMotorSpeed = 0;
                                 out.println("hardcode done");
 
-                            }
-
+                            break;
 
                         case "gate":
                             for (int i = 1; i < commandParts.length; i++) {
@@ -410,7 +436,7 @@ class Server{
                             }
                             collect(vel, delay, motorLeft, motorRight);
                             delay = 500;
-                            vel = 0;
+                            //vel = 0;
                             back_flag = false;
                             out.println("hardcode done");
                             break;
