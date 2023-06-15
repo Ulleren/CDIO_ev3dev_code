@@ -244,6 +244,7 @@ class Server{
         motorRight.stop();
         latchCal();
 
+
     }
 
     public static void killMotors(){
@@ -346,14 +347,19 @@ class Server{
 
                         case "reverse":
                             for (int i = 1; i < commandParts.length; i++) {
+                                if (commandParts[i].charAt(0) == 's') {
+                                    vel = Double.parseDouble(commandParts[i].substring(1));
+                                }
                                 if (commandParts[i].charAt(0) == 'm') {
                                     delay = Integer.parseInt(commandParts[i].substring(1));
                                 }
-                                movement(3, -1,-1,motorLeft, motorRight);
+                                movement(vel, -1,-1,motorLeft, motorRight);
                                 Delay.msDelay(delay);
                                 motorRight.stop();
                                 motorLeft.stop();
                                 delay = 500;
+                                vel = 0;
+                                out.println("hardcode done");
 
                             }
 
@@ -406,6 +412,7 @@ class Server{
                             delay = 500;
                             vel = 0;
                             back_flag = false;
+                            out.println("hardcode done");
                             break;
 
                         case "drop"://drop 20 cm from wall
@@ -425,11 +432,13 @@ class Server{
                             }
                             fdrop(motorLeft, motorRight);
                             vel = 0;
+                            out.println("hardcode done");
                             break;
 
                         case "corner"://corner and wall collect: 15 cm with 0.5cm error margin
                             corner(2,3, motorLeft, motorRight);
                             vel = 0;
+                            out.println("hardcode done");
                             break;
 
                         case "stop":
