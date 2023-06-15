@@ -353,7 +353,10 @@ class Server {
                             for (int i = 1; i < commandParts.length; i++) {
                                 if (commandParts[i].charAt(0) == 's') {
                                     vel = Double.parseDouble(commandParts[i].substring(1));
+                                }else {
+                                    vel = 3;
                                 }
+
                                 if (commandParts[i].charAt(0) == 'm') {
                                     delay = Integer.parseInt(commandParts[i].substring(1));
                                 }
