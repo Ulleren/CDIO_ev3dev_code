@@ -153,10 +153,10 @@ class Server{
         latch.setSpeed(500);
         latch.rotateTo(230);
         movement(5, 1,1,motorLeft, motorRight);//vel
-        Delay.msDelay(delay);//1500
+        Delay.msDelay(300);//1500
         latch.setSpeed(1000);
         latch.rotateTo(60);
-        Delay.msDelay(300);//1500
+        Delay.msDelay(200);//1500
         motorLeft.stop();
         motorRight.stop();
         if (back_flag == true){
@@ -206,6 +206,7 @@ class Server{
         System.out.println("Close "+latch.getPosition() + "\n");
     }
 
+
     public static void fdrop( EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight){
         motorLeft.stop();
         motorRight.stop();
@@ -213,7 +214,7 @@ class Server{
         latch.setSpeed(200);
         latch.rotate(400);
         Delay.msDelay(400);//3000
-        latch.rotate(120);
+        latch.rotate(60);
         motorLeft.stop();
         motorRight.stop();
         Delay.msDelay(3000);//3000
@@ -328,8 +329,7 @@ class Server{
                                         vel = max_speed;
                                         max_speed++;
                                     }
-                                    turnRightMotorSpeed = 1;
-                                    turnLeftMotorSpeed = 1;
+
                                 }
 
                                 if (commandParts[i].charAt(0) == 'b') {
@@ -343,6 +343,20 @@ class Server{
                                 }
                             }
                             break;
+
+                        case "reverse":
+                            for (int i = 1; i < commandParts.length; i++) {
+                                if (commandParts[i].charAt(0) == 'm') {
+                                    delay = Integer.parseInt(commandParts[i].substring(1));
+                                }
+                                movement(3, -1,-1,motorLeft, motorRight);
+                                Delay.msDelay(delay);
+                                motorRight.stop();
+                                motorLeft.stop();
+                                delay = 500;
+
+                            }
+
 
                         case "gate":
                             for (int i = 1; i < commandParts.length; i++) {
