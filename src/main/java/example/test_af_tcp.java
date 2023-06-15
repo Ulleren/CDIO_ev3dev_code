@@ -80,12 +80,15 @@ public class test_af_tcp {
                             for (int i = 1; i < commandParts.length; i++) {
                                 if (commandParts[i].charAt(0) == 's') {
                                     vel = Double.parseDouble(commandParts[i].substring(1));
+                                    turnRightMotorSpeed = 1;
+                                    turnLeftMotorSpeed = 1;
                                     //  response = client.sendMessage("drive");
                                 }
 
                                 if (commandParts[i].charAt(0) == 'b') {
-                                    turnRightMotorSpeed = Double.parseDouble(commandParts[i].substring(1)) * -1;
-                                    turnLeftMotorSpeed = Double.parseDouble(commandParts[i].substring(1)) * -1;
+                                    vel = 2;
+                                    turnRightMotorSpeed = -1;
+                                    turnLeftMotorSpeed = -1;
                                     //  response = client.sendMessage("Back");
                                 }
 

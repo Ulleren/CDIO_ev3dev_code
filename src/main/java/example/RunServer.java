@@ -328,11 +328,14 @@ class Server{
                                         vel = max_speed;
                                         max_speed++;
                                     }
+                                    turnRightMotorSpeed = 1;
+                                    turnLeftMotorSpeed = 1;
                                 }
 
                                 if (commandParts[i].charAt(0) == 'b') {
-                                    turnRightMotorSpeed = Double.parseDouble(commandParts[i].substring(1)) * -1;
-                                    turnLeftMotorSpeed = Double.parseDouble(commandParts[i].substring(1)) * -1;
+                                    vel = 2;
+                                    turnRightMotorSpeed = -1;
+                                    turnLeftMotorSpeed = -1;
                                 }
 
                                 if (commandParts[i].charAt(0) == 'o') {
