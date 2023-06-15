@@ -213,7 +213,7 @@ class Server{
         latch.setSpeed(200);
         latch.rotate(400);
         Delay.msDelay(400);//3000
-        latch.rotate(150);
+        latch.rotate(120);
         motorLeft.stop();
         motorRight.stop();
         Delay.msDelay(3000);//3000
@@ -238,7 +238,7 @@ class Server{
         motorRight.stop();
         latch.rotateTo(0);
         movement(1, -1,-1,motorLeft, motorRight);//vel
-        Delay.msDelay(4000);//1000
+        Delay.msDelay(2000);//1000
         motorLeft.stop();
         motorRight.stop();
         latchCal();
