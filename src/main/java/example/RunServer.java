@@ -151,7 +151,7 @@ class Server{
         motorRight.stop();
         System.out.println("start: "+latch.getPosition());
         latch.setSpeed(500);
-        latch.rotateTo(210);
+        latch.rotateTo(230);
         movement(5, 1,1,motorLeft, motorRight);//vel
         Delay.msDelay(delay);//1500
         latch.setSpeed(1000);
