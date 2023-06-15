@@ -76,7 +76,7 @@ class ServerStarter extends Thread {
 }
 
 //Server class
-class Server{
+class Server {
 
     public Socket clientSocket;//Create client socket
     public static PrintWriter out;//Define server output buffer
@@ -90,52 +90,56 @@ class Server{
     public static boolean back_flag = false;//flag for driving backwards in collect
 
     //Set speed of latch
-    public static void initMotorLatchSpeed(double latchSpeed){
+    public static void initMotorLatchSpeed(double latchSpeed) {
         //convert rad/s to degrees/s
-        latchSpeed= (latchSpeed*57.2957);
-       // System.out.println("Defining motor speed to "+latchSpeed+" degrees/s\n");
+        latchSpeed = (latchSpeed * 57.2957);
+        // System.out.println("Defining motor speed to "+latchSpeed+" degrees/s\n");
         latch.setSpeed((int) latchSpeed);
     }
+
     //Method to move latch
-    public static void moveLatch(int dir, double angToTurn){
-        double relation=5; //relation between degrees to turn from angle in degrees and motor position (5.432)
-        int angg= (int) (angToTurn*relation);
-        if(dir==0){ //open latch
+    public static void moveLatch(int dir, double angToTurn) {
+        double relation = 5; //relation between degrees to turn from angle in degrees and motor position (5.432)
+        int angg = (int) (angToTurn * relation);
+        if (dir == 0) { //open latch
             latch.rotate(angg);
-        }else{ //close latch
+        } else { //close latch
             latch.rotate((-angg));
         }
 
     }
 
-    public static void movement(double vel, double turnLeftMotorSpeed, double turnRightMotorSpeed, EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight ){
+    public static void movement(double vel, double turnLeftMotorSpeed, double turnRightMotorSpeed, EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight) {
         //begin to move
 
         double motorVelocity = 5 * vel * (int) Battery.getInstance().getVoltage();
         //System.out.println("Motor vel: " + motorVelocity + "\n");
-        int leftSum = (int) (turnLeftMotorSpeed * (20 * Battery.getInstance().getVoltage())+ motorVelocity);
-        int rightSum = (int) (turnRightMotorSpeed * (20 * Battery.getInstance().getVoltage())+ motorVelocity);
+        int leftSum = (int) (turnLeftMotorSpeed * (20 * Battery.getInstance().getVoltage()) + motorVelocity);
+        int rightSum = (int) (turnRightMotorSpeed * (20 * Battery.getInstance().getVoltage()) + motorVelocity);
         //System.out.println("left: " + leftSum + "\n");
         //System.out.println("right: " + rightSum + "\n");
 
 
         if (leftSum < 0) {
             motorLeft.setSpeed(leftSum * (-1));
-            motorLeft.backward();
-        } else {
-            motorLeft.setSpeed(leftSum);
-            motorLeft.forward();
         }
 
         if (rightSum < 0) {
             motorRight.setSpeed(rightSum * (-1));
-            motorRight.backward();
-        } else {
-            motorRight.setSpeed(rightSum);
-            motorRight.forward();
         }
 
-        // client.sendMessage("Got it");
+        if (turnLeftMotorSpeed < 0) {
+            motorLeft.backward();
+        }else{
+            motorLeft.forward();
+        }
+
+        if (turnRightMotorSpeed < 0) {
+            motorRight.backward();
+        }else{
+            motorLeft.forward();
+        }
+
     }
 
     public static void latchCal(){
@@ -359,6 +363,8 @@ class Server{
                                 motorLeft.stop();
                                 delay = 500;
                                 vel = 0;
+                                turnRightMotorSpeed = 0;
+                                turnLeftMotorSpeed = 0;
                                 out.println("hardcode done");
 
                             }
