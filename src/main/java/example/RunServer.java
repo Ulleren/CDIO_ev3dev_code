@@ -84,7 +84,7 @@ class Server {
     Boolean overwrite = false;//flag to overwrite acceleration
 
 
-    public static void reversal(int rev_speed,int delay, EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight) throws IOException {
+    public static void reversal(int rev_speed,int delay, EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight) {
         rev_speed = (int) (rev_speed * 5 * Battery.getInstance().getVoltage());
         motorLeft.setSpeed(rev_speed);
         motorRight.setSpeed(rev_speed);
@@ -134,11 +134,11 @@ class Server {
 
         motorLeft.stop();
         motorRight.stop();
-        Delay.msDelay(200);
+        Delay.msDelay(500);
         latch.setSpeed(500);
         latch.rotateTo(230);
         movement(5, 1,1,motorLeft, motorRight);//vel
-        Delay.msDelay(300);//1500
+        Delay.msDelay(400);//1500
         latch.setSpeed(1000);
         latch.rotateTo(60);
         Delay.msDelay(200);//1500
@@ -181,20 +181,19 @@ class Server {
         latchCal();
     }*/
 
-    public static void fdrop( EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight){
+    public static void fdrop( EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight) {
         motorLeft.stop();
         motorRight.stop();
-        movement(2, 0,0,motorLeft, motorRight);
+        movement(2.2, 0,0,motorLeft, motorRight);
         latch.setSpeed(250);
         latch.rotate(400);
-        Delay.msDelay(400);//3000
+        Delay.msDelay(800);
         latch.rotate(60);
-        Delay.msDelay(300);
+        Delay.msDelay(400);
         motorLeft.stop();
         motorRight.stop();
-        Delay.msDelay(3000);//3000
-        movement(3, -1,-1,motorLeft, motorRight);
         Delay.msDelay(2000);
+        reversal(6,500,motorLeft,motorRight);
         latch.rotateTo(0);
         motorLeft.stop();
         motorRight.stop();
@@ -209,7 +208,7 @@ class Server {
         motorLeft.stop();
         motorRight.stop();
         latch.rotateTo(0);
-        reversal(5,2000,motorLeft,motorRight);
+        reversal(5,1200,motorLeft,motorRight);
         killMotors(motorLeft,motorRight);
         latchCal();
 
@@ -316,7 +315,7 @@ class Server {
                             vel = 0;
                             turnRightMotorSpeed = 0;
                             turnLeftMotorSpeed = 0;
-                            out.println("hardcode done");
+                            out.println("reverse done");
                             break;
 
                         case "gate":
@@ -340,19 +339,19 @@ class Server {
                         case "collect":
                             collect(motorLeft, motorRight);
                             vel = 0;
-                            out.println("hardcode done");
+                            out.println("collect done");
                             break;
 
                         case "drop"://drop 20 cm from wall
                             fdrop(motorLeft, motorRight);
                             vel = 0;
-                            out.println("hardcode done");
+                            out.println("drop done");
                             break;
 
                         case "corner"://corner and wall collect: 15 cm with 0.5cm error margin
                             corner(motorLeft, motorRight);
                             vel = 0;
-                            out.println("hardcode done");
+                            out.println("corner done");
                             break;
 
                         case "stop":
