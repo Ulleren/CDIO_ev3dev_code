@@ -109,13 +109,15 @@ class Server {
 
     }
 
-    public static void reversal(int rev_speed, int delay, EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight){
-        rev_speed = (int)(rev_speed * 5 * Battery.getInstance().getVoltage());
-        motorLeft.setSpeed(rev_speed);
-        motorRight.setSpeed(rev_speed);
-        motorLeft.backward();
-        motorRight.backward();
-        Delay.msDelay(delay);
+    public static void reversal(int rev_speed, int delay, EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight) throws IOException {
+        rev_speed = (int) (rev_speed * 5 * Battery.getInstance().getVoltage());
+       while(!in.readLine().equals("stop")) {
+           motorLeft.setSpeed(rev_speed);
+           motorRight.setSpeed(rev_speed);
+           motorLeft.backward();
+           motorRight.backward();
+       }
+        //Delay.msDelay(delay);
         motorRight.stop();
         motorLeft.stop();
         motorLeft.setSpeed(0);
@@ -163,6 +165,7 @@ class Server {
 
         motorLeft.stop();
         motorRight.stop();
+        Delay.msDelay(200);
         System.out.println("start: "+latch.getPosition());
         latch.setSpeed(500);
         latch.rotateTo(230);
@@ -252,10 +255,10 @@ class Server {
         motorLeft.stop();
         motorRight.stop();
         latch.rotateTo(0);
-        movement(1, -1,-1,motorLeft, motorRight);//vel
+        /*movement(1, -1,-1,motorLeft, motorRight);//vel
         Delay.msDelay(2000);//1000
         motorLeft.stop();
-        motorRight.stop();
+        motorRight.stop();*/
         latchCal();
 
 
@@ -296,7 +299,7 @@ class Server {
 
         //Robot runtime loop
             do {
-                out.println("Got it");//ACK from server to client
+                //out.println("Got it");//ACK from server to client
                 response = "N/A";//Initiate response
 
                 //Read client command
@@ -343,7 +346,7 @@ class Server {
                                     vel = Double.parseDouble(commandParts[i].substring(1));
                                     if (max_speed < vel && !overwrite){
                                         vel = max_speed;
-                                        max_speed++;
+                                        max_speed+=0.5;
                                     }
 
                                 }
