@@ -39,7 +39,6 @@ public class RunServer{
         motorLeft = new EV3LargeRegulatedMotor(MotorPort.A);
         motorRight = new EV3LargeRegulatedMotor(MotorPort.B);
         latch = new EV3MediumRegulatedMotor(MotorPort.C);
-       //fan = new EV3MediumRegulatedMotor(MotorPort.D);
 
 
         //Instantiate server
@@ -81,47 +80,17 @@ class Server {
     public Socket clientSocket;//Create client socket
     public static PrintWriter out;//Define server output buffer
     public static BufferedReader in;//Define server input buffer
-
-    public static int currAngle;//Define variable for current angle of gate
-
-    int max_speed = 1;//Define max speed for robot acceleration
-
+    double max_speed = 1;//Define max speed for robot acceleration
     Boolean overwrite = false;//flag to overwrite acceleration
-    public static boolean back_flag = false;//flag for driving backwards in collect
 
-    //Set speed of latch
-    public static void initMotorLatchSpeed(double latchSpeed) {
-        //convert rad/s to degrees/s
-        latchSpeed = (latchSpeed * 57.2957);
-        // System.out.println("Defining motor speed to "+latchSpeed+" degrees/s\n");
-        latch.setSpeed((int) latchSpeed);
-    }
 
-    //Method to move latch
-    public static void moveLatch(int dir, double angToTurn) {
-        double relation = 5; //relation between degrees to turn from angle in degrees and motor position (5.432)
-        int angg = (int) (angToTurn * relation);
-        if (dir == 0) { //open latch
-            latch.rotate(angg);
-        } else { //close latch
-            latch.rotate((-angg));
-        }
-
-    }
-
-    public static void reversal(int rev_speed, int delay, EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight) throws IOException {
+    public static void reversal(int rev_speed,int delay, EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight) throws IOException {
         rev_speed = (int) (rev_speed * 5 * Battery.getInstance().getVoltage());
-       while(!in.readLine().equals("stop")) {
-           motorLeft.setSpeed(rev_speed);
-           motorRight.setSpeed(rev_speed);
-           motorLeft.backward();
-           motorRight.backward();
-       }
-        //Delay.msDelay(delay);
-        motorRight.stop();
-        motorLeft.stop();
-        motorLeft.setSpeed(0);
-        motorRight.setSpeed(0);
+        motorLeft.setSpeed(rev_speed);
+        motorRight.setSpeed(rev_speed);
+        motorLeft.backward();
+        motorRight.backward();
+        Delay.msDelay(delay);
     }
 
     public static void movement(double vel, double turnLeftMotorSpeed, double turnRightMotorSpeed, EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight) {
@@ -161,12 +130,11 @@ class Server {
         latch.rotateTo(0);
     }
 
-    public static void collect(double vel, int delay, EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight){
+    public static void collect( EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight){
 
         motorLeft.stop();
         motorRight.stop();
         Delay.msDelay(200);
-        System.out.println("start: "+latch.getPosition());
         latch.setSpeed(500);
         latch.rotateTo(230);
         movement(5, 1,1,motorLeft, motorRight);//vel
@@ -176,14 +144,10 @@ class Server {
         Delay.msDelay(200);//1500
         motorLeft.stop();
         motorRight.stop();
-        if (back_flag == true){
-            movement(2, -1,-1,motorLeft, motorRight);//vel
-            Delay.msDelay(3000);
-        }
         latchCal();
     }
-
-    public static void drop(double vel, int delay, double latchVelocity, EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight){
+/*
+    public static void drop( int vel, int delay, EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight){
         //ca. 15 cm afstand fra målet
 
         motorLeft.stop();
@@ -192,9 +156,6 @@ class Server {
 
         latch.setSpeed(500);
         latch.rotateTo(400);
-        System.out.println("Open "+latch.getPosition() + "\n");
-        System.out.println("Driving \n");
-        //movement(vel, 1,1,motorLeft, motorRight);
         vel = 0;
         for (int i = 0; i < 9; i++){
             movement(vel, 1,1,motorLeft, motorRight);
@@ -208,30 +169,27 @@ class Server {
             movement(vel, 1,1,motorLeft, motorRight);
             vel-=2;
         }
-        vel = 0;
-        //Delay.msDelay(750);
         Delay.msDelay(delay);
         motorLeft.stop();
         motorRight.stop();
         System.out.println("Backing \n");
         movement(3, -1,-1,motorLeft, motorRight);//1
-        Delay.msDelay(2000);//3000
+        Delay.msDelay(2000);
         latch.rotateTo(0);
         motorLeft.stop();
         motorRight.stop();
         latchCal();
-        System.out.println("Close "+latch.getPosition() + "\n");
-    }
-
+    }*/
 
     public static void fdrop( EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight){
         motorLeft.stop();
         motorRight.stop();
         movement(2, 0,0,motorLeft, motorRight);
-        latch.setSpeed(200);
+        latch.setSpeed(250);
         latch.rotate(400);
         Delay.msDelay(400);//3000
         latch.rotate(60);
+        Delay.msDelay(300);
         motorLeft.stop();
         motorRight.stop();
         Delay.msDelay(3000);//3000
@@ -243,28 +201,21 @@ class Server {
         latchCal();
     }
 
-    public static void corner(double vel, double latchVelocity, EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight){
-        //initMotorLatchSpeed(latchVelocity);
-        //åbne latch
-        moveLatch(0, 45);
+    public static void corner( EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight) throws IOException {
         latch.setSpeed(300);
-        //kørefrem
         movement(1, 0,0,motorLeft, motorRight);
         latch.rotateTo(250);
-        Delay.msDelay(4300);
+        Delay.msDelay(3800);
         motorLeft.stop();
         motorRight.stop();
         latch.rotateTo(0);
-        /*movement(1, -1,-1,motorLeft, motorRight);//vel
-        Delay.msDelay(2000);//1000
-        motorLeft.stop();
-        motorRight.stop();*/
+        reversal(5,2000,motorLeft,motorRight);
+        killMotors(motorLeft,motorRight);
         latchCal();
-
 
     }
 
-    public static void killMotors(){
+    public static void killMotors(EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight){
         motorLeft.stop();
         motorRight.stop();
         latch.stop();
@@ -272,34 +223,29 @@ class Server {
 
     public void start() throws IOException {
             String response = "N/A";
-            System.out.println("ready to recive");
             voice("what is my purpose");
             RunServer.sync = true;
             clientSocket = serverSocket.accept();
             RunServer.sync = true;
             voice("Connected");
             //voice("Connected. Battery level" + (int)(battery.getVoltage()*100) + " centivolt");
-            System.out.println("er her");
 
             out = new PrintWriter(clientSocket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
             RunServer.sync = true;
 
-            initMotorLatchSpeed(1);
+             //relation between degrees to turn from angle in degrees and motor position (5.432)
+             //latchSpeed * 57.2957
             int delay = 500;
+            int rev_speed;
+            int angle;
             double vel = 0; //robots velocity
             double turnLeftMotorSpeed = 0; //left wheel speed rad/s
             double turnRightMotorSpeed = 0; //right wheel speed rad/s
-            double latchVelocity = 1; //Latch velocity read from client
-            double langle; //Latch angle
-            int mangle; //Custom Latch angle(Maybe useless)
-            int angle = 0;
-            int rev_speed = 0;
 
-        //Robot runtime loop
+            //Robot runtime loop
             do {
-                //out.println("Got it");//ACK from server to client
                 response = "N/A";//Initiate response
 
                 //Read client command
@@ -309,7 +255,6 @@ class Server {
 
                 //Semicolon spilts commands
                 String[] commands = response.split(";");
-
 
                 //Main commands
                 for (String command : commands) {
@@ -348,15 +293,7 @@ class Server {
                                         vel = max_speed;
                                         max_speed+=0.5;
                                     }
-
                                 }
-
-                                if (commandParts[i].charAt(0) == 'b') {
-                                    vel = 2;
-                                    turnRightMotorSpeed = -1;
-                                    turnLeftMotorSpeed = -1;
-                                }
-
                                 if (commandParts[i].charAt(0) == 'o') {
                                     overwrite = true;
                                 }
@@ -369,46 +306,24 @@ class Server {
                                 if (commandParts[i].charAt(0) == 's') {
                                     rev_speed = Integer.parseInt(commandParts[i].substring(1));
                                 }
-
-                                if (commandParts[i].charAt(0) == 'm') {
-                                    delay = Integer.parseInt(commandParts[i].substring(1));
-                                }
                             }
-                                reversal(rev_speed,delay,motorLeft,motorRight);
-                                /*rev_speed = (int)(rev_speed * 5 * Battery.getInstance().getVoltage());
-                                motorLeft.setSpeed(rev_speed);
-                                motorRight.setSpeed(rev_speed);
-                                motorLeft.backward();
-                                motorRight.backward();
-                                Delay.msDelay(delay);
-                                motorRight.stop();
-                                motorLeft.stop();
-                                motorLeft.setSpeed(0);
-                                motorRight.setSpeed(0);*/
-                                vel = 0;
-                                rev_speed = 0;
-                                turnRightMotorSpeed = 0;
-                                turnLeftMotorSpeed = 0;
-                                out.println("hardcode done");
-
+                            while(!in.readLine().contains("stop")) {
+                                reversal(rev_speed,0,motorLeft,motorRight);
+                            }
+                            killMotors(motorLeft,motorRight);
+                            motorLeft.setSpeed(0);
+                            motorRight.setSpeed(0);
+                            vel = 0;
+                            turnRightMotorSpeed = 0;
+                            turnLeftMotorSpeed = 0;
+                            out.println("hardcode done");
                             break;
 
                         case "gate":
                             for (int i = 1; i < commandParts.length; i++) {
-                                if (commandParts[i].charAt(0) == 'u') { //move latch up
-                                    langle = Double.parseDouble(commandParts[i].substring(1));
-                                    moveLatch(0, langle);
-                                }
-
-                                if (commandParts[i].charAt(0) == 'd') { //move latch down
-                                    langle = Double.parseDouble(commandParts[i].substring(1));
-                                    moveLatch(1, langle);
-                                }
-
-                                if (commandParts[i].charAt(0) == 'a') { //move latch to custom angle
-                                    langle = Double.parseDouble(commandParts[i].substring(1));
-                                    mangle = (int) (langle - currAngle);
-                                    latch.rotate(mangle);
+                                if (commandParts[i].charAt(0) == 'a') { //move latch up
+                                    angle = Integer.parseInt(commandParts[i].substring(1));
+                                    latch.rotateTo(angle);
                                 }
 
                                 if (commandParts[i].charAt(0) == 's') { //drive speed
@@ -419,53 +334,23 @@ class Server {
                                 if (commandParts[i].charAt(0) == 'g') { //gate speed
                                     latch.setSpeed(Integer.parseInt(commandParts[i].substring(1)));
                                 }
-
                             }
                             break;
 
                         case "collect":
-                            for (int i = 1; i < commandParts.length; i++) {
-                                if (commandParts[i].charAt(0) == 's') {
-                                    vel = Double.parseDouble(commandParts[i].substring(1)); //drive speed
-                                }
-
-                                if (commandParts[i].charAt(0) == 'm') {
-                                    delay = Integer.parseInt(commandParts[i].substring(1));
-                                }
-
-                                if (commandParts[i].charAt(0) == 'b') {
-                                    back_flag = true;
-                                }
-                            }
-                            collect(vel, delay, motorLeft, motorRight);
-                            delay = 500;
-                            //vel = 0;
-                            back_flag = false;
+                            collect(motorLeft, motorRight);
+                            vel = 0;
                             out.println("hardcode done");
                             break;
 
                         case "drop"://drop 20 cm from wall
-                            for (int i = 1; i < commandParts.length; i++) {
-                                if (commandParts[i].charAt(0) == 's') {
-                                    vel = Double.parseDouble(commandParts[i].substring(1)); //drive speed
-                                }
-
-                                if (commandParts[i].charAt(0) == 'm') {
-                                    delay = Integer.parseInt(commandParts[i].substring(1));
-                                }
-
-                                if (commandParts[i].charAt(0) == 'a') {
-                                    angle = Integer.parseInt(commandParts[i].substring(1));
-                                }
-
-                            }
                             fdrop(motorLeft, motorRight);
                             vel = 0;
                             out.println("hardcode done");
                             break;
 
                         case "corner"://corner and wall collect: 15 cm with 0.5cm error margin
-                            corner(2,3, motorLeft, motorRight);
+                            corner(motorLeft, motorRight);
                             vel = 0;
                             out.println("hardcode done");
                             break;
@@ -474,25 +359,14 @@ class Server {
                             for (int i = 1; i < commandParts.length; i++) {
                                 // "stop -d" stop driving
                                 if (commandParts[i].charAt(0) == 'd') {
-                                    //motorLeft.stop();
-                                    //motorRight.stop();
-
                                     vel = 0;
                                     max_speed = 1;
                                     overwrite = false;
-                                    //response = client.sendMessage("stop drive");
                                 }
                                 // "stop -t" stop turning
                                 if (commandParts[i].charAt(0) == 't') {
                                     turnLeftMotorSpeed = 0;
                                     turnRightMotorSpeed = 0;
-                                    //motorLeft.stop();
-                                    //motorRight.stop();
-                                    // response = client.sendMessage("stop turn");
-                                }
-                                // "stop -g" stop gate
-                                if (commandParts[i].charAt(0) == 'g') {
-                                    initMotorLatchSpeed(0);
                                 }
                             }
                             break;
@@ -538,14 +412,14 @@ class Server {
                                 }
 
                                 if (commandParts[i].charAt(0) == 'a') {
-                                    delay = Integer.parseInt(commandParts[i].substring(1));
+                                    angle = Integer.parseInt(commandParts[i].substring(1));
                                 }
 
                             }
 
-
+                            //fdrop(motorLeft, motorRight);
                             //collect(vel, delay, motorLeft, motorRight);
-                        fdrop(motorLeft, motorRight);
+                            //corner(vel, motorLeft, motorRight);
 
                         default:
                             break;
@@ -561,11 +435,6 @@ class Server {
                     RunServer.sync = true;
                 }
 
-               /* if(Timer.counter == 10){
-                    killMotors();
-                    turnLeftMotorSpeed = 0;
-                    turnRightMotorSpeed = 0;
-                }*/
 
             } while (!response.equals("exit"));
                  voice("Goodbye world");//exit response
@@ -623,14 +492,14 @@ class Timer extends Thread{
 
             counter++;//Increase timer count
 
-             /*if(counter == 10){
-                 Server.killMotors();
+             /*if(counter == 20){
+                 Server.killMotors(motorLeft,motorRight);
              }*/
 
             if(counter > MAX_COUNT){//If timer reaches max count
 
                 //Stop robot motors
-                Server.killMotors();
+                Server.killMotors(motorLeft,motorRight);
 
                 try {
                     server.stop();//Stop server
