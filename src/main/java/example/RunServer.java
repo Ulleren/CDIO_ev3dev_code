@@ -81,11 +81,11 @@ class Server {
     public static PrintWriter out;//Define server output buffer
     public static BufferedReader in;//Define server input buffer
     double max_speed = 1;//Define max speed for robot acceleration
-    Boolean overwrite = false;//flag to overwrite acceleration
+    Boolean overwrite = true;//flag to overwrite acceleration
 
 
     public static void reversal(int rev_speed,int delay, EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight) {
-        rev_speed = (int) (rev_speed * 5 * Battery.getInstance().getVoltage());
+        rev_speed = (rev_speed * 5 * 7);
         motorLeft.setSpeed(rev_speed);
         motorRight.setSpeed(rev_speed);
         motorLeft.backward();
@@ -96,10 +96,10 @@ class Server {
     public static void movement(double vel, double turnLeftMotorSpeed, double turnRightMotorSpeed, EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight) {
         //begin to move
 
-        double motorVelocity = 5 * vel * (int) Battery.getInstance().getVoltage();
+        double motorVelocity = 5 * vel * 7;
         //System.out.println("Motor vel: " + motorVelocity + "\n");
-        int leftSum = (int) (turnLeftMotorSpeed * (20 * Battery.getInstance().getVoltage()) + motorVelocity);
-        int rightSum = (int) (turnRightMotorSpeed * (20 * Battery.getInstance().getVoltage()) + motorVelocity);
+        int leftSum = (int) (turnLeftMotorSpeed * (20 * 7) + motorVelocity);
+        int rightSum = (int) (turnRightMotorSpeed * (20 * 7) + motorVelocity);
         //System.out.println("left: " + leftSum + "\n");
         //System.out.println("right: " + rightSum + "\n");
 
@@ -187,13 +187,13 @@ class Server {
         movement(2.2, 0,0,motorLeft, motorRight);
         latch.setSpeed(250);
         latch.rotate(400);
-        Delay.msDelay(800);
+        Delay.msDelay(500);//800
         latch.rotate(60);
         Delay.msDelay(400);
         motorLeft.stop();
         motorRight.stop();
         Delay.msDelay(2000);
-        reversal(6,500,motorLeft,motorRight);
+        reversal(6,0,motorLeft,motorRight);
         latch.rotateTo(0);
         motorLeft.stop();
         motorRight.stop();
@@ -201,14 +201,15 @@ class Server {
     }
 
     public static void corner( EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight) throws IOException {
-        latch.setSpeed(300);
+        latch.setSpeed(400);
         movement(1, 0,0,motorLeft, motorRight);
-        latch.rotateTo(250);
-        Delay.msDelay(3800);
+        latch.rotateTo(180,true);
+        Delay.msDelay(4450);//5000
         motorLeft.stop();
         motorRight.stop();
-        latch.rotateTo(0);
-        reversal(5,1200,motorLeft,motorRight);
+        latch.rotateTo(0, true);
+        Delay.msDelay(300);
+        reversal(5,1500,motorLeft,motorRight);
         killMotors(motorLeft,motorRight);
         latchCal();
 
@@ -226,8 +227,8 @@ class Server {
             RunServer.sync = true;
             clientSocket = serverSocket.accept();
             RunServer.sync = true;
-            voice("Connected");
-            //voice("Connected. Battery level" + (int)(battery.getVoltage()*100) + " centivolt");
+            //voice("Connected");
+            voice("Connected. Battery level" + (int)(battery.getVoltage()*100) + " centivolt");
 
             out = new PrintWriter(clientSocket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
@@ -245,6 +246,7 @@ class Server {
 
             //Robot runtime loop
             do {
+                //out.println("Got it");
                 response = "N/A";//Initiate response
 
                 //Read client command
@@ -360,7 +362,7 @@ class Server {
                                 if (commandParts[i].charAt(0) == 'd') {
                                     vel = 0;
                                     max_speed = 1;
-                                    overwrite = false;
+                                    overwrite = true;
                                 }
                                 // "stop -t" stop turning
                                 if (commandParts[i].charAt(0) == 't') {
