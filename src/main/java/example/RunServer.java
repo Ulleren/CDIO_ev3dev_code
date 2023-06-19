@@ -85,7 +85,7 @@ class Server {
 
 
     public static void reversal(int rev_speed,int delay, EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight) {
-        rev_speed = (rev_speed * 5 * 7);
+        rev_speed = (rev_speed * 35);
         motorLeft.setSpeed(rev_speed);
         motorRight.setSpeed(rev_speed);
         motorLeft.backward();
@@ -96,10 +96,10 @@ class Server {
     public static void movement(double vel, double turnLeftMotorSpeed, double turnRightMotorSpeed, EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight) {
         //begin to move
 
-        double motorVelocity = 5 * vel * 7;
+        double motorVelocity = vel * 35;
         //System.out.println("Motor vel: " + motorVelocity + "\n");
-        int leftSum = (int) (turnLeftMotorSpeed * (20 * 7) + motorVelocity);
-        int rightSum = (int) (turnRightMotorSpeed * (20 * 7) + motorVelocity);
+        int leftSum = (int) (turnLeftMotorSpeed * (140) + motorVelocity);
+        int rightSum = (int) (turnRightMotorSpeed * (140) + motorVelocity);
         //System.out.println("left: " + leftSum + "\n");
         //System.out.println("right: " + rightSum + "\n");
 
@@ -189,7 +189,7 @@ class Server {
         latch.rotate(400);
         Delay.msDelay(500);//800
         latch.rotate(60);
-        Delay.msDelay(400);
+        Delay.msDelay(200);//
         motorLeft.stop();
         motorRight.stop();
         Delay.msDelay(2000);
@@ -204,7 +204,7 @@ class Server {
         latch.setSpeed(400);
         movement(1, 0,0,motorLeft, motorRight);
         latch.rotateTo(180,true);
-        Delay.msDelay(4450);//5000
+        Delay.msDelay(4350);//5000//4450
         motorLeft.stop();
         motorRight.stop();
         latch.rotateTo(0, true);
