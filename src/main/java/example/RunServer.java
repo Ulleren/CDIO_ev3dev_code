@@ -474,7 +474,7 @@ class Server {
 class Timer extends Thread{
 
     public static int counter;//Timeout counter
-    public static int MAX_COUNT = 240;//Amount of seconds before timeout
+    public static int MAX_COUNT = 30;//Amount of seconds before timeout
 
     public void run(){
         counter = 0;//Start count at zero
