@@ -379,8 +379,8 @@ class Server {
                                     voice("Timer set to" + Timer.MAX_COUNT + "seconds");
                                 }
 
-                                if (commandParts[i].charAt(0) == 'r') {//Timer reset to on minute
-                                    Timer.MAX_COUNT = 60;
+                                if (commandParts[i].charAt(0) == 'r') {//Timer reset to 30 sek
+                                    Timer.MAX_COUNT = 30;
                                     voice("Timer reset");
                                 }
 
@@ -390,7 +390,7 @@ class Server {
                                 }
 
                                 if (commandParts[i].charAt(0) == 'h') {//Timer set to one hour
-                                    Timer.MAX_COUNT = 360000;
+                                    Timer.MAX_COUNT = 3600;
                                     voice("Timer set to one hour");
                                 }
                                // voice("Timer set to" + Timer.MAX_COUNT + "seconds");
@@ -474,7 +474,7 @@ class Server {
 class Timer extends Thread{
 
     public static int counter;//Timeout counter
-    public static int MAX_COUNT = 30;//Amount of seconds before timeout
+    public static int MAX_COUNT = 240;//Amount of seconds before timeout
 
     public void run(){
         counter = 0;//Start count at zero
