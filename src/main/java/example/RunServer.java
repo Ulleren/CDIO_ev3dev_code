@@ -187,9 +187,9 @@ class Server {
         movement(2.2, 0,0,motorLeft, motorRight);
         latch.setSpeed(250);
         latch.rotate(400);
-        Delay.msDelay(500);//800
+        Delay.msDelay(400);//500
         latch.rotate(60);
-        Delay.msDelay(200);//
+        Delay.msDelay(200);//200
         motorLeft.stop();
         motorRight.stop();
         Delay.msDelay(2000);
@@ -203,13 +203,28 @@ class Server {
     public static void corner( EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight) throws IOException {
         latch.setSpeed(400);
         movement(1, 0,0,motorLeft, motorRight);
-        latch.rotateTo(180,true);
-        Delay.msDelay(4350);//5000//4450
+        latch.rotateTo(170,true);//180
+        Delay.msDelay(4200);//4300
         motorLeft.stop();
         motorRight.stop();
         latch.rotateTo(0, true);
         Delay.msDelay(300);
         reversal(5,1500,motorLeft,motorRight);
+        killMotors(motorLeft,motorRight);
+        latchCal();
+
+    }
+
+    public static void cross( EV3LargeRegulatedMotor motorLeft, EV3LargeRegulatedMotor motorRight) throws IOException {
+        latch.setSpeed(400);
+        movement(1, 0,0,motorLeft, motorRight);
+        latch.rotateTo(170,true);
+        Delay.msDelay(3800);//4000
+        motorLeft.stop();
+        motorRight.stop();
+        latch.rotateTo(0, true);
+        Delay.msDelay(300);
+        reversal(5,1100,motorLeft,motorRight);
         killMotors(motorLeft,motorRight);
         latchCal();
 
@@ -356,6 +371,12 @@ class Server {
                             out.println("corner done");
                             break;
 
+                        case "cross"://cross collect
+                            cross(motorLeft, motorRight);
+                            vel = 0;
+                            out.println("cross done");
+                            break;
+
                         case "stop":
                             for (int i = 1; i < commandParts.length; i++) {
                                 // "stop -d" stop driving
@@ -474,7 +495,7 @@ class Server {
 class Timer extends Thread{
 
     public static int counter;//Timeout counter
-    public static int MAX_COUNT = 30;//Amount of seconds before timeout
+    public static int MAX_COUNT = 36000;//Amount of seconds before timeout
 
     public void run(){
         counter = 0;//Start count at zero
